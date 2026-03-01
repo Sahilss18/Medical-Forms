@@ -27,14 +27,14 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async findByEmail(email: string): Promise<User | undefined> {
+  async findByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({ 
       where: { email },
       select: ['id', 'email', 'password_hash', 'role', 'name'] 
     });
   }
 
-  async findOne(id: string): Promise<User | undefined> {
+  async findOne(id: string): Promise<User | null> {
     return this.usersRepository.findOne({ where: { id } });
   }
 }
