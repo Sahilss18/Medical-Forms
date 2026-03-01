@@ -1,98 +1,129 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Licensing Workflow Backend (Form 3F)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A government-grade licensing backend built with **NestJS**, **PostgreSQL**, and **TypeORM**. This system manages medical institution recognition for essential narcotic drugs (Form 3F).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Getting Started
 
-## Description
+### Prerequisites
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js (v18+)
+- PostgreSQL (v14+)
 
-## Project setup
+### Installation
 
-```bash
-$ yarn install
-```
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Configure environment variables in `.env`:
+   ```env
+   PORT=3000
+   DATABASE_URL=postgres://harshil:0000@localhost:5432/medical_forms
+   JWT_SECRET=your-secret-key
+   JWT_EXPIRATION=24h
+   ```
 
-## Compile and run the project
+### Running the App
 
 ```bash
-# development
-$ yarn run start
+# Development mode
+npm run start:dev
 
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+# Production mode
+npm run build
+npm run start:prod
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ yarn run test
+## 🔑 Demo Credentials
 
-# e2e tests
-$ yarn run test:e2e
+The system automatically seeds data on the first run.
 
-# test coverage
-$ yarn run test:cov
-```
+| Role          | Email              | Password      |
+| :------------ | :----------------- | :------------ |
+| **Admin**     | `admin@gov.in`     | `password123` |
+| **Officer**   | `officer@gov.in`   | `password123` |
+| **Inspector** | `inspector@gov.in` | `password123` |
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🛠 Database Structure (PostgreSQL)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Core Modules & Tables
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
-```
+#### 1. Identity & Users
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- `users`: Core user accounts (UUID, RBAC roles, district).
+- `institutions`: Profile data for medical institutions (One-to-One with user).
 
-## Resources
+#### 2. Organizational Hierarchy
 
-Check out a few resources that may come in handy when working with NestJS:
+- `licensing_offices`: STATE, REGIONAL, and DISTRICT offices.
+- `licensing_officers`: Linked to users with `SCRUTINY` or `FINAL` approval levels.
+- `inspectors`: Field inspectors with hierarchical mapping.
+- `inspector_jurisdictions`: Maps inspectors to specific States, Districts, and Taluks.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+#### 3. Dynamic Forms Engine
 
-## Support
+- `forms`: Definitions (e.g., FORM_3F).
+- `form_fields`: Dynamic fields (text, number, file, select) with JSON validation rules.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+#### 4. Application Workflow
 
-## Stay in touch
+- `applications`: The core record tracking status (`SUBMITTED` -> `APPROVED`).
+- `application_values`: Stores dynamic responses for each field.
+- `documents`: Stores file references for attachments.
+- `queries`: Record of clarifications requested by officers.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### 5. Inspection & Decisions
 
-## License
+- `inspection_assignments`: Links applications to inspectors with due dates.
+- `inspection_reports`: Compliance status and text submitted by inspectors.
+- `decisions`: Final approval/rejection records with remarks.
+- `certificates`: Issued licenses with expiry dates and PDF URLs.
+- `audit_logs`: Immutable record of every action performed in the system.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## 📡 API Routes
+
+### Authentication (`/auth`)
+
+- `POST /auth/register`: Register a new institution user.
+- `POST /auth/login`: Login and receive JWT access token.
+
+### Forms (`/forms`)
+
+- `GET /forms`: List all active forms.
+- `GET /forms/:id/fields`: Get dynamic fields for a specific form.
+
+### Applications (`/applications`)
+
+- `POST /applications/submit`: Submit a new application with dynamic data.
+- `GET /applications/:id`: Get full application details and current status.
+- `POST /applications/:id/query`: Raise a clarification request (Officers only).
+
+### Inspections (`/inspections`)
+
+- `POST /inspections/auto-assign/:id`: Automatically assign an inspector based on district and workload.
+- `POST /inspections/report/:id`: Submit a field inspection report (Inspectors only).
+
+### Decisions & Certificates (`/decisions`, `/certificates`)
+
+- `POST /decisions/approve/:id`: Final approval of an application.
+- `GET /certificates/download/:applicationId`: Download the issued license PDF.
+
+---
+
+## 🛡 Security & Design Patterns
+
+- **RBAC Guards**: Restricts access based on roles (`APPLICANT`, `INSPECTOR`, `OFFICER`, etc.).
+- **Workflow State Machine**: Prevents invalid status transitions.
+- **Auto-Assignment Logic**: Round-robin style assignment considering inspector workload and district jurisdiction.
+- **UUIDs**: All primary keys use UUIDs for security and scalability.
+- **Soft Deletes**: Critical entities use soft deletes to preserve audit trails.
