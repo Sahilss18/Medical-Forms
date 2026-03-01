@@ -40,90 +40,146 @@ npm run start:prod
 
 ---
 
-## 🔑 Demo Credentials
+## � API Documentation & Sample Payloads
 
-The system automatically seeds data on the first run.
+### 1. Authentication (`/auth`)
 
-| Role          | Email              | Password      |
-| :------------ | :----------------- | :------------ |
-| **Admin**     | `admin@gov.in`     | `password123` |
-| **Officer**   | `officer@gov.in`   | `password123` |
-| **Inspector** | `inspector@gov.in` | `password123` |
+#### **Register a New Institution**
 
----
+`POST /auth/register`
 
-## 🛠 Database Structure (PostgreSQL)
+- **Payload:**
 
-### Core Modules & Tables
+```json
+{
+  "name": "Apollo Hospital",
+  "email": "apollo@medical.com",
+  "phone": "9876543210",
+  "password": "Password123!",
+  "role": "APPLICANT",
+  "district": "Mumbai"
+}
+```
 
-#### 1. Identity & Users
+#### **Login**
 
-- `users`: Core user accounts (UUID, RBAC roles, district).
-- `institutions`: Profile data for medical institutions (One-to-One with user).
+`POST /auth/login`
 
-#### 2. Organizational Hierarchy
+- **Payload:**
 
-- `licensing_offices`: STATE, REGIONAL, and DISTRICT offices.
-- `licensing_officers`: Linked to users with `SCRUTINY` or `FINAL` approval levels.
-- `inspectors`: Field inspectors with hierarchical mapping.
-- `inspector_jurisdictions`: Maps inspectors to specific States, Districts, and Taluks.
+```json
+{
+  "email": "apollo@medical.com",
+  "password": "Password123!"
+}
+```
 
-#### 3. Dynamic Forms Engine
+- **Sample Output:**
 
-- `forms`: Definitions (e.g., FORM_3F).
-- `form_fields`: Dynamic fields (text, number, file, select) with JSON validation rules.
-
-#### 4. Application Workflow
-
-- `applications`: The core record tracking status (`SUBMITTED` -> `APPROVED`).
-- `application_values`: Stores dynamic responses for each field.
-- `documents`: Stores file references for attachments.
-- `queries`: Record of clarifications requested by officers.
-
-#### 5. Inspection & Decisions
-
-- `inspection_assignments`: Links applications to inspectors with due dates.
-- `inspection_reports`: Compliance status and text submitted by inspectors.
-- `decisions`: Final approval/rejection records with remarks.
-- `certificates`: Issued licenses with expiry dates and PDF URLs.
-- `audit_logs`: Immutable record of every action performed in the system.
+```json
+{
+  "access_token": "eyJhbGci...",
+  "user": { "id": "uuid", "email": "...", "role": "APPLICANT" }
+}
+```
 
 ---
 
-## 📡 API Routes
+### 2. Forms & Applications (`/applications`)
 
-### Authentication (`/auth`)
+#### **Get Available Forms**
 
-- `POST /auth/register`: Register a new institution user.
-- `POST /auth/login`: Login and receive JWT access token.
+`GET /forms`
 
-### Forms (`/forms`)
+- **Response:** List of forms (e.g., `FORM_3F`).
 
-- `GET /forms`: List all active forms.
-- `GET /forms/:id/fields`: Get dynamic fields for a specific form.
+#### **Submit Application**
 
-### Applications (`/applications`)
+`POST /applications/submit`
 
-- `POST /applications/submit`: Submit a new application with dynamic data.
-- `GET /applications/:id`: Get full application details and current status.
-- `POST /applications/:id/query`: Raise a clarification request (Officers only).
+- **Headers:** `Authorization: Bearer <token>`
+- **Payload:**
 
-### Inspections (`/inspections`)
-
-- `POST /inspections/auto-assign/:id`: Automatically assign an inspector based on district and workload.
-- `POST /inspections/report/:id`: Submit a field inspection report (Inspectors only).
-
-### Decisions & Certificates (`/decisions`, `/certificates`)
-
-- `POST /decisions/approve/:id`: Final approval of an application.
-- `GET /certificates/download/:applicationId`: Download the issued license PDF.
+```json
+{
+  "form_id": "uuid-form-3f",
+  "institution_id": "uuid-inst",
+  "office_id": "uuid-office",
+  "values": [
+    { "field_id": "uuid-f1", "value_text": "Apollo Hospital South" },
+    { "field_id": "uuid-f2", "value_file_url": "s3://docs/registration.pdf" }
+  ]
+}
+```
 
 ---
 
-## 🛡 Security & Design Patterns
+### 3. Workflow & Inspections (Staff Only)
 
-- **RBAC Guards**: Restricts access based on roles (`APPLICANT`, `INSPECTOR`, `OFFICER`, etc.).
-- **Workflow State Machine**: Prevents invalid status transitions.
-- **Auto-Assignment Logic**: Round-robin style assignment considering inspector workload and district jurisdiction.
-- **UUIDs**: All primary keys use UUIDs for security and scalability.
-- **Soft Deletes**: Critical entities use soft deletes to preserve audit trails.
+#### **Auto-Assign Inspector**
+
+`POST /inspections/auto-assign/:applicationId`
+
+- **Role:** `OFFICER`
+- **Logic:** Matches district + current workload.
+
+#### **Submit Inspection Report**
+
+`POST /inspections/report/:applicationId`
+
+- **Role:** `INSPECTOR`
+- **Payload:**
+
+```json
+{
+  "report_text": "Premises inspected and found compliant.",
+  "compliance_status": "COMPLIANT",
+  "photos_url": "s3://reports/photos.zip"
+}
+```
+
+---
+
+### 4. Decisions & Certificates
+
+#### **Approve Application**
+
+`POST /decisions/approve/:applicationId`
+
+- **Role:** `OFFICER`
+- **Payload:**
+
+```json
+{
+  "remarks": "Final approval granted after verification."
+}
+```
+
+#### **Download Certificate**
+
+`GET /certificates/:applicationId`
+
+- **Response:** PDF URL and Certificate metadata.
+
+---
+
+## 🏗 Database Entities
+
+| Table                | Purpose                                               |
+| :------------------- | :---------------------------------------------------- |
+| `users`              | Identity management (RBAC).                           |
+| `institutions`       | Profile data for applicants.                          |
+| `licensing_offices`  | Jurisdictional hierarchy (STATE, REGIONAL, DISTRICT). |
+| `forms`              | Dynamic form definitions.                             |
+| `applications`       | Main workflow tracking entity.                        |
+| `inspection_reports` | Field validation results.                             |
+| `audit_logs`         | Immutable trail of all system actions.                |
+
+---
+
+## 🛡 Security & Design
+
+- **JWT Protection**: All core routes are guarded by `@UseGuards(JwtAuthGuard)`.
+- **RBAC**: enforced by `@Roles(UserRole.OFFICER, ...)` decorators.
+- **Workflow Integrity**: Status transitions are validated by `WorkflowService`.
+- **Infrastructure**: Ready for Cloud Object Storage (stores URLs).
