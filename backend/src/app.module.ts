@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { SeedService } from './seed.service';
 
 // Entities
 import { User } from './users/entities/user.entity';
@@ -54,10 +55,11 @@ import { CommonModule } from './common/common.module';
           InspectionAssignment, InspectionReport, Decision, 
           Certificate, AuditLog
         ],
-        synchronize: true, // DEV ONLY
+        synchronize: true,
         logging: true,
       }),
     }),
+    TypeOrmModule.forFeature([User, Form, FormField, LicensingOffice]),
     AuthModule,
     UsersModule,
     InstitutionsModule,
