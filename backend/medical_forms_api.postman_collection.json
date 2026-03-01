@@ -1,0 +1,358 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+		"name": "Medical Licensing Workflow API",
+		"description": "API collection for the government-grade medical licensing system (Form 3F).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Apollo Hospital\",\n  \"email\": \"apollo@medical.com\",\n  \"phone\": \"9876543210\",\n  \"password\": \"Password123!\",\n  \"role\": \"APPLICANT\",\n  \"district\": \"Mumbai\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.access_token) {",
+									"    pm.environment.set(\"auth_token\", jsonData.access_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"apollo@medical.com\",\n  \"password\": \"Password123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Forms",
+			"item": [
+				{
+					"name": "Get Forms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/forms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"forms"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Applications",
+			"item": [
+				{
+					"name": "Submit Application",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"form_id\": \"PASTE_FORM_ID_HERE\",\n  \"institution_id\": \"PASTE_INSTITUTION_ID_HERE\",\n  \"office_id\": \"PASTE_OFFICE_ID_HERE\",\n  \"values\": [\n    { \"field_id\": \"FIELD_ID_1\", \"value_text\": \"Apollo Hospital South\" },\n    { \"field_id\": \"FIELD_ID_2\", \"value_file_url\": \"https://example.com/docs/reg.pdf\" }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/applications/submit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"applications",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Application Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/applications/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"applications",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inspections (Staff Roles)",
+			"item": [
+				{
+					"name": "Auto-Assign Inspector",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inspections/auto-assign/:applicationId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inspections",
+								"auto-assign",
+								":applicationId"
+							],
+							"variable": [
+								{
+									"key": "applicationId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Inspection Report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"report_text\": \"Premises inspected and found compliant with all safety norms regarding narcotic drug storage.\",\n  \"compliance_status\": \"COMPLIANT\",\n  \"photos_url\": \"https://s3.cloud.storage/inspection-photos/uuid.zip\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/inspections/report/:applicationId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inspections",
+								"report",
+								":applicationId"
+							],
+							"variable": [
+								{
+									"key": "applicationId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Decisions & Certificates",
+			"item": [
+				{
+					"name": "Approve Application",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"remarks\": \"Final approval granted after verification of field inspection report.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/decisions/approve/:applicationId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"decisions",
+								"approve",
+								":applicationId"
+							],
+							"variable": [
+								{
+									"key": "applicationId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Certificate",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/certificates/:applicationId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"certificates",
+								":applicationId"
+							],
+							"variable": [
+								{
+									"key": "applicationId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "auth_token",
+			"value": ""
+		}
+	]
+}

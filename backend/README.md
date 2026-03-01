@@ -177,6 +177,20 @@ npm run start:prod
 
 ---
 
+## 🧪 Testing with Postman
+
+A Postman collection is provided in the root directory: `medical_forms_api.postman_collection.json`.
+
+1. Open Postman.
+2. Click **Import** and select the JSON file.
+3. The collection includes:
+   - **Auth**: Register and Login (Login script automatically sets `{{auth_token}}`).
+   - **Forms**: Fetch dynamic structures.
+   - **Applications**: Submit and track progress.
+   - **Staff Operations**: Auto-assign, report, and approve.
+
+---
+
 ## 🛡 Security & Design
 
 - **JWT Protection**: All core routes are guarded by `@UseGuards(JwtAuthGuard)`.
