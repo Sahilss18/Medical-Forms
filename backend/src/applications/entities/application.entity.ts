@@ -1,4 +1,5 @@
 export enum ApplicationStatus {
+  DRAFT = 'DRAFT',
   SUBMITTED = 'SUBMITTED',
   SCRUTINY = 'SCRUTINY',
   CLARIFICATION = 'CLARIFICATION',
@@ -15,6 +16,7 @@ import { Form } from '../../forms/entities/form.entity';
 import { Institution } from '../../institutions/entities/institution.entity';
 import { LicensingOffice } from '../../offices/entities/office.entity';
 import { ApplicationValue } from './value.entity';
+import { Document } from './document.entity';
 
 @Entity('applications')
 export class Application extends BaseEntity {
@@ -53,4 +55,7 @@ export class Application extends BaseEntity {
 
   @OneToMany(() => ApplicationValue, (value) => value.application)
   values: ApplicationValue[];
+
+  @OneToMany(() => Document, (document) => document.application)
+  documents: Document[];
 }

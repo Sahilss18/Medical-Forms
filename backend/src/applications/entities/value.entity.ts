@@ -24,4 +24,13 @@ export class ApplicationValue extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   value_file_url: string;
+
+  // Alias for easier access
+  get value(): string {
+    return this.value_text;
+  }
+
+  set value(val: string) {
+    this.value_text = val;
+  }
 }

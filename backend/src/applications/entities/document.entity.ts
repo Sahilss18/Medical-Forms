@@ -17,6 +17,12 @@ export class Document extends BaseEntity {
   @Column()
   file_url: string;
 
+  @Column({ nullable: true })
+  file_size: number;
+
+  @Column({ nullable: true })
+  mime_type: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   uploaded_at: Date;
 }

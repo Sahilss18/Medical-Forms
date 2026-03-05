@@ -23,6 +23,7 @@ import { InspectionReport } from './inspections/entities/report.entity';
 import { Decision } from './decisions/entities/decision.entity';
 import { Certificate } from './certificates/entities/certificate.entity';
 import { AuditLog } from './audit/entities/audit-log.entity';
+import { Payment } from './payments/entities/payment.entity';
 
 // Modules
 import { AuthModule } from './auth/auth.module';
@@ -38,6 +39,8 @@ import { CertificatesModule } from './certificates/certificates.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditModule } from './audit/audit.module';
 import { CommonModule } from './common/common.module';
+import { AdminModule } from './admin/admin.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -53,13 +56,20 @@ import { CommonModule } from './common/common.module';
           Inspector, InspectorJurisdiction, Form, FormField, 
           Application, ApplicationValue, Document, Query,
           InspectionAssignment, InspectionReport, Decision, 
-          Certificate, AuditLog
+          Certificate, AuditLog, Payment
         ],
         synchronize: true,
         logging: true,
       }),
     }),
-    TypeOrmModule.forFeature([User, Form, FormField, LicensingOffice]),
+    TypeOrmModule.forFeature([
+      User,
+      Form,
+      FormField,
+      LicensingOffice,
+      Institution,
+      Inspector,
+    ]),
     AuthModule,
     UsersModule,
     InstitutionsModule,
@@ -73,6 +83,8 @@ import { CommonModule } from './common/common.module';
     NotificationsModule,
     AuditModule,
     CommonModule,
+    AdminModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, SeedService],

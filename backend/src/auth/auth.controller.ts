@@ -20,4 +20,11 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout() {
+    // JWT is stateless, so logout is handled client-side
+    return { message: 'Logged out successfully' };
+  }
 }

@@ -4,6 +4,7 @@ import { Application, ApplicationStatus } from './entities/application.entity';
 @Injectable()
 export class WorkflowService {
   private readonly allowedTransitions: Record<ApplicationStatus, ApplicationStatus[]> = {
+    [ApplicationStatus.DRAFT]: [ApplicationStatus.SUBMITTED],
     [ApplicationStatus.SUBMITTED]: [ApplicationStatus.SCRUTINY],
     [ApplicationStatus.SCRUTINY]: [ApplicationStatus.CLARIFICATION, ApplicationStatus.INSPECTION_ASSIGNED, ApplicationStatus.REJECTED],
     [ApplicationStatus.CLARIFICATION]: [ApplicationStatus.SUBMITTED],

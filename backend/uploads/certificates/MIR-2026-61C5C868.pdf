@@ -1,0 +1,45 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 274 >>
+stream
+BT
+/F1 18 Tf
+70 760 Td
+(Medical License Certificate) Tj
+0 -40 Td
+/F1 12 Tf
+(Certificate Number: MIR/2026/61C5C868) Tj
+0 -24 Td
+(Application ID: 61c5c868-f13d-4fc2-a47f-dca4fa93f426) Tj
+0 -24 Td
+(Issue Date: 2026-03-02) Tj
+0 -24 Td
+(Issued by: Medical Licensing Portal) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000060 00000 n 
+0000000117 00000 n 
+0000000243 00000 n 
+0000000313 00000 n 
+trailer
+<< /Root 1 0 R /Size 6 >>
+startxref
+622
+%%EOF

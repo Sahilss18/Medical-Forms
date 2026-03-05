@@ -14,8 +14,32 @@ export class Institution extends BaseEntity {
   @Column()
   name: string;
 
+  @Column({ nullable: true })
+  registration_number: string;
+
+  @Column({ nullable: true })
+  institution_type: string;
+
+  @Column({ nullable: true })
+  established_year: string;
+
+  @Column({ nullable: true })
+  license_number: string;
+
   @Column('text')
   address: string;
+
+  @Column({ nullable: true })
+  address_line2: string;
+
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  state: string;
+
+  @Column({ nullable: true })
+  pincode: string;
 
   @Column()
   district: string;
@@ -25,4 +49,7 @@ export class Institution extends BaseEntity {
 
   @Column()
   contact_phone: string;
+
+  @Column({ nullable: true })
+  contact_email: string;
 }

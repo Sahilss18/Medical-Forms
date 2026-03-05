@@ -17,14 +17,29 @@ export class InspectionReport extends BaseEntity {
   @JoinColumn({ name: 'inspection_id' })
   assignment: InspectionAssignment;
 
-  @Column('text')
+  @Column({ type: 'jsonb', nullable: true })
+  checklist_items: any;
+
+  @Column({ type: 'text', nullable: true })
+  observations: string;
+
+  @Column({ type: 'text', nullable: true })
   report_text: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  recommendation: string;
 
   @Column({ type: 'enum', enum: ComplianceStatus })
   compliance_status: ComplianceStatus;
 
+  @Column({ type: 'jsonb', nullable: true })
+  photos: any;
+
   @Column({ type: 'text', nullable: true })
   photos_url: string;
+
+  @Column({ type: 'date', nullable: true })
+  inspection_date: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   submitted_at: Date;

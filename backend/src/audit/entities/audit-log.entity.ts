@@ -6,6 +6,12 @@ export class AuditLog extends BaseEntity {
   @Column({ nullable: true })
   application_id: string;
 
+  @Column({ nullable: true })
+  entity_type: string;
+
+  @Column({ nullable: true })
+  entity_id: string;
+
   @Column()
   action: string;
 
@@ -17,4 +23,10 @@ export class AuditLog extends BaseEntity {
 
   @Column({ type: 'jsonb', nullable: true })
   metadata: any;
+
+  @Column({ type: 'jsonb', nullable: true })
+  changes: any;
+
+  @Column({ nullable: true })
+  ip_address: string;
 }

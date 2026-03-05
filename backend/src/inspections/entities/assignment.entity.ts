@@ -1,5 +1,6 @@
 export enum InspectionStatus {
   PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
@@ -34,6 +35,12 @@ export class InspectionAssignment extends BaseEntity {
 
   @Column({ type: 'date', nullable: true })
   due_date: Date;
+
+  @Column({ type: 'text', nullable: true })
+  special_instructions: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  documents_to_verify: any;
 
   @OneToOne(() => InspectionReport, (report) => report.assignment)
   report: InspectionReport;
