@@ -8,7 +8,7 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { DynamicForm } from '@/types';
 import { Building2, MapPin, Phone, Mail, Calendar, FileText } from 'lucide-react';
-import { getFormByCode } from '@/constants/forms';
+import { getFormByCode, DocumentRequirement } from '@/constants/forms';
 import PaymentModal from '@/components/payment/PaymentModal';
 import toast from 'react-hot-toast';
 
@@ -37,9 +37,28 @@ const NewApplication: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [draftApplicationId, setDraftApplicationId] = useState<string | null>(null);
+  const [documentFiles, setDocumentFiles] = useState<Record<string, File[]>>({});
 
   const formCodeToUse = formCode || '3F';
   const formMetadata = getFormByCode(formCodeToUse);
+  const documentRequirements = formMetadata?.documentRequirements || [];
+  const getAllowedMimeTypes = (document: DocumentRequirement): string[] => {
+    return document.format.map((format) => {
+      const upper = format.toUpperCase();
+      if (upper === 'PDF') return 'application/pdf';
+      if (upper === 'JPG' || upper === 'JPEG') return 'image/jpeg';
+      if (upper === 'PNG') return 'image/png';
+      if (upper === 'DOC') return 'application/msword';
+      if (upper === 'DOCX') {
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      }
+      if (upper === 'XLS') return 'application/vnd.ms-excel';
+      if (upper === 'XLSX') {
+        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      }
+      return 'application/octet-stream';
+    });
+  };
   // Parse fees (remove ₹ and commas, convert to number)
   const feeAmount = formMetadata?.fees
     ? parseFloat(formMetadata.fees.replace(/[₹,]/g, ''))
@@ -48,6 +67,10 @@ const NewApplication: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [formCode]);
+
+  useEffect(() => {
+    setDocumentFiles({});
+  }, [formCodeToUse]);
 
   const fetchData = async () => {
     try {
@@ -91,8 +114,8 @@ const NewApplication: React.FC = () => {
   };
 
   const handleSubmit = async (data: Record<string, any>) => {
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
       
       // Separate files from other form data
       const files: { field: string; file: File }[] = [];
@@ -111,7 +134,34 @@ const NewApplication: React.FC = () => {
         }
       });
 
-      console.log('📤 Submitting application with', Object.keys(formDataWithoutFiles).length, 'fields and', files.length, 'files');
+      const requiredDocuments = documentRequirements.filter((doc) => doc.mandatory);
+      const missingRequiredDocuments = requiredDocuments.filter(
+        (doc) => !(documentFiles[doc.id]?.length > 0),
+      );
+
+      if (missingRequiredDocuments.length > 0) {
+        toast.error(
+          `Please upload required documents: ${missingRequiredDocuments.map((doc) => doc.name).join(', ')}`,
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      const checklistUploads = documentRequirements
+        .flatMap((doc) =>
+          (documentFiles[doc.id] || []).slice(0, 1).map((file) => ({
+            file,
+            documentType: doc.name,
+          })),
+        );
+
+          console.log(
+            '📤 Submitting application with',
+            Object.keys(formDataWithoutFiles).length,
+            'fields and',
+            files.length + checklistUploads.length,
+            'files',
+          );
       
       // First, create a draft application
       const response = await applicationService.createApplication({
@@ -120,45 +170,53 @@ const NewApplication: React.FC = () => {
         status: 'draft',
       });
 
-      if (response.success && response.data) {
-        const applicationId = response.data.id;
-        console.log('✅ Application created:', applicationId);
+      if (!response.success || !response.data) {
+        toast.error('Failed to create application. Please try again.');
+        return;
+      }
+
+      const applicationId = response.data.id;
+      console.log('✅ Application created:', applicationId);
+      
+      // Upload files if any
+      const allUploads = [
+        ...files.map(({ field, file }) => ({ file, documentType: field })),
+        ...checklistUploads,
+      ];
+
+      if (allUploads.length > 0) {
+        console.log('📎 Uploading', allUploads.length, 'documents...');
+        toast.loading(`Uploading ${allUploads.length} document(s)...`, { id: 'upload-progress' });
         
-        // Upload files if any
-        if (files.length > 0) {
-          console.log('📎 Uploading', files.length, 'documents...');
-          toast.loading(`Uploading ${files.length} document(s)...`, { id: 'upload-progress' });
-          
-          let uploadedCount = 0;
-          for (const { file } of files) {
-            try {
-              await applicationService.uploadDocument(applicationId, file);
-              uploadedCount++;
-              console.log('✅ Uploaded:', file.name);
-              toast.loading(`Uploaded ${uploadedCount}/${files.length} documents...`, { id: 'upload-progress' });
-            } catch (error) {
-              console.error('❌ Failed to upload', file.name, error);
-              toast.error(`Failed to upload ${file.name}`);
-            }
+        let uploadedCount = 0;
+        for (const { file, documentType } of allUploads) {
+          try {
+            await applicationService.uploadDocument(applicationId, file, documentType);
+            uploadedCount++;
+            console.log('✅ Uploaded:', file.name);
+            toast.loading(`Uploaded ${uploadedCount}/${allUploads.length} documents...`, { id: 'upload-progress' });
+          } catch (error) {
+            console.error('❌ Failed to upload', file.name, error);
+            toast.error(`Failed to upload ${file.name}`);
           }
-          
-          toast.success(`All documents uploaded successfully!`, { id: 'upload-progress' });
-          
-          // Wait a moment for user to see the success message
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } else {
-          toast.success('Application created successfully!');
         }
         
-        // Store the draft ID
-        setDraftApplicationId(applicationId);
+        toast.success(`All documents uploaded successfully!`, { id: 'upload-progress' });
         
-        // Show payment modal after documents are uploaded
-        setShowPaymentModal(true);
-        setIsSubmitting(false);
+        // Wait a moment for user to see the success message
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        toast.success('Application created successfully!');
       }
+      
+      // Store the draft ID
+      setDraftApplicationId(applicationId);
+      
+      // Show payment modal after documents are uploaded
+      setShowPaymentModal(true);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to process application');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -199,6 +257,14 @@ const NewApplication: React.FC = () => {
           formDataWithoutFiles[key] = value;
         }
       });
+
+      const checklistUploads = documentRequirements
+        .flatMap((doc) =>
+          (documentFiles[doc.id] || []).slice(0, 1).map((file) => ({
+            file,
+            documentType: doc.name,
+          })),
+        );
       
       const response = await applicationService.createApplication({
         formId: formCodeToUse,
@@ -210,10 +276,15 @@ const NewApplication: React.FC = () => {
         const applicationId = response.data.id;
         
         // Upload files if any
-        if (files.length > 0) {
-          for (const { file } of files) {
+        const allUploads = [
+          ...files.map(({ field, file }) => ({ file, documentType: field })),
+          ...checklistUploads,
+        ];
+
+        if (allUploads.length > 0) {
+          for (const { file, documentType } of allUploads) {
             try {
-              await applicationService.uploadDocument(applicationId, file);
+              await applicationService.uploadDocument(applicationId, file, documentType);
             } catch (error) {
               console.error('Failed to upload', file.name, error);
             }
@@ -248,7 +319,6 @@ const NewApplication: React.FC = () => {
             <LoadingSkeleton count={3} height="h-8" className="mb-3" />
           ) : institutionProfile ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Column 1 */}
               <div className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Institution Name</p>
@@ -276,7 +346,6 @@ const NewApplication: React.FC = () => {
                 </div>
               </div>
 
-              {/* Column 2 */}
               <div className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Contact Person</p>
@@ -344,6 +413,15 @@ const NewApplication: React.FC = () => {
                 isLoading={isSubmitting}
                 submitButtonText="Proceed to Payment"
                 showDraftButton
+                documentRequirements={documentRequirements}
+                documentFiles={documentFiles}
+                onDocumentFilesChange={(documentId, files) =>
+                  setDocumentFiles((previous) => ({
+                    ...previous,
+                    [documentId]: files,
+                  }))
+                }
+                getAllowedMimeTypes={getAllowedMimeTypes}
               />
             ) : (
               <FormRenderer
@@ -353,6 +431,15 @@ const NewApplication: React.FC = () => {
                 isLoading={isSubmitting}
                 submitButtonText="Proceed to Payment"
                 showDraftButton
+                documentRequirements={documentRequirements}
+                documentFiles={documentFiles}
+                onDocumentFilesChange={(documentId, files) =>
+                  setDocumentFiles((previous) => ({
+                    ...previous,
+                    [documentId]: files,
+                  }))
+                }
+                getAllowedMimeTypes={getAllowedMimeTypes}
               />
             )
           ) : (

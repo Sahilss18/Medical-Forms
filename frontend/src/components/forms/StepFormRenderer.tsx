@@ -9,6 +9,8 @@ import { Select } from '../ui/Select';
 import { FileUpload } from '../ui/FileUpload';
 import { Button } from '../ui/Button';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { DocumentUploadsChecklist } from './DocumentUploadsChecklist';
+import { DocumentRequirement } from '@/constants/forms';
 
 interface FormStep {
   title: string;
@@ -25,6 +27,10 @@ interface StepFormRendererProps {
   isLoading?: boolean;
   submitButtonText?: string;
   showDraftButton?: boolean;
+  documentRequirements?: DocumentRequirement[];
+  documentFiles?: Record<string, File[]>;
+  onDocumentFilesChange?: (documentId: string, files: File[]) => void;
+  getAllowedMimeTypes?: (document: DocumentRequirement) => string[];
 }
 
 export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
@@ -35,6 +41,10 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
   isLoading = false,
   submitButtonText = 'Submit Application',
   showDraftButton = true,
+  documentRequirements = [],
+  documentFiles = {},
+  onDocumentFilesChange,
+  getAllowedMimeTypes = () => [],
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -71,19 +81,25 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
         },
         {
           stepNumber: 5,
+          title: 'Document Uploads',
+          description: 'Upload all required documents and certificates',
+          fields: [],
+        },
+        {
+          stepNumber: 6,
           title: 'Declaration & Signature',
           description: 'Confirm declaration and digital signature',
           fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 17 && f.order_index <= 18),
         },
         {
-          stepNumber: 6,
+          stepNumber: 7,
           title: 'Review & Payment',
           description: 'Review your application and proceed to payment',
           fields: [],
         },
       ];
 
-      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 6);
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
     }
     
     // Define step ranges
@@ -247,7 +263,7 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
   const handleNext = async () => {
     // Validate current step fields
     const currentStepFields = steps[currentStep].fields.map(f => f.name);
-    const isValid = await trigger(currentStepFields);
+    const isValid = currentStepFields.length === 0 ? true : await trigger(currentStepFields);
     
     if (isValid && currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -473,7 +489,14 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {currentStepData.fields.length > 0 ? (
+          {currentStepData.title === 'Document Uploads' && documentRequirements.length > 0 ? (
+            <DocumentUploadsChecklist
+              documentRequirements={documentRequirements}
+              documentFiles={documentFiles}
+              onFilesChange={(documentId, files) => onDocumentFilesChange?.(documentId, files)}
+              getAllowedMimeTypes={getAllowedMimeTypes}
+            />
+          ) : currentStepData.fields.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {currentStepData.fields.map((field) => (
                 <div

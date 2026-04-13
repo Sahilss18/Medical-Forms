@@ -8,6 +8,8 @@ import { Textarea } from '../ui/Textarea';
 import { Select } from '../ui/Select';
 import { FileUpload } from '../ui/FileUpload';
 import { Button } from '../ui/Button';
+import { DocumentUploadsChecklist } from './DocumentUploadsChecklist';
+import { DocumentRequirement } from '@/constants/forms';
 
 interface FormRendererProps {
   form: DynamicForm;
@@ -17,6 +19,10 @@ interface FormRendererProps {
   isLoading?: boolean;
   submitButtonText?: string;
   showDraftButton?: boolean;
+  documentRequirements?: DocumentRequirement[];
+  documentFiles?: Record<string, File[]>;
+  onDocumentFilesChange?: (documentId: string, files: File[]) => void;
+  getAllowedMimeTypes?: (document: DocumentRequirement) => string[];
 }
 
 export const FormRenderer: React.FC<FormRendererProps> = ({
@@ -27,6 +33,10 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
   isLoading = false,
   submitButtonText = 'Submit',
   showDraftButton = true,
+  documentRequirements = [],
+  documentFiles = {},
+  onDocumentFilesChange,
+  getAllowedMimeTypes = () => [],
 }) => {
   // Build Zod schema dynamically
   const buildSchema = (fields: FormField[]) => {
@@ -309,19 +319,45 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      {form.sections.map((section: FormSection) => (
-        <div key={section.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">{section.title}</h2>
-            {section.description && (
-              <p className="mt-1 text-sm text-gray-500">{section.description}</p>
+      {form.sections.map((section: FormSection) => {
+        const shouldRenderDocumentChecklist =
+          documentRequirements.length > 0 &&
+          /document upload/i.test(section.title) &&
+          !section.fields.some((field) => field.type === 'file');
+
+        return (
+          <div key={section.id} className="space-y-6">
+            {shouldRenderDocumentChecklist && (
+              <DocumentUploadsChecklist
+                documentRequirements={documentRequirements}
+                documentFiles={documentFiles}
+                onFilesChange={(documentId, files) => onDocumentFilesChange?.(documentId, files)}
+                getAllowedMimeTypes={getAllowedMimeTypes}
+              />
             )}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">{section.title}</h2>
+                {section.description && (
+                  <p className="mt-1 text-sm text-gray-500">{section.description}</p>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {section.fields.map(renderField)}
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {section.fields.map(renderField)}
-          </div>
-        </div>
-      ))}
+        );
+      })}
+
+      {documentRequirements.length > 0 && !form.sections.some((section) => /document upload/i.test(section.title)) && (
+        <DocumentUploadsChecklist
+          documentRequirements={documentRequirements}
+          documentFiles={documentFiles}
+          onFilesChange={(documentId, files) => onDocumentFilesChange?.(documentId, files)}
+          getAllowedMimeTypes={getAllowedMimeTypes}
+        />
+      )}
 
       <div className="flex items-center justify-end space-x-4">
         {showDraftButton && onSaveDraft && (

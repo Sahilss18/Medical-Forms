@@ -175,8 +175,18 @@ export const applicationService = {
     return apiClient.post(`/applications/${id}/decision`, { decision, remarks });
   },
 
-  async uploadDocument(applicationId: string, file: File): Promise<ApiResponse<ApplicationDocument>> {
-    return apiClient.uploadFile(`/applications/${applicationId}/documents`, file);
+  async uploadDocument(
+    applicationId: string,
+    file: File,
+    documentType?: string,
+  ): Promise<ApiResponse<ApplicationDocument>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (documentType) {
+      formData.append('documentType', documentType);
+    }
+
+    return apiClient.post(`/applications/${applicationId}/documents`, formData);
   },
 
   async deleteDocument(applicationId: string, documentId: string): Promise<ApiResponse<void>> {
