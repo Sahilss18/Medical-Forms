@@ -6,8 +6,6 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { authService } from '@/services/authService';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),

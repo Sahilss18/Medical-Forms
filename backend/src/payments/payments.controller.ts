@@ -1,6 +1,20 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+type AuthRequest = {
+  user: {
+    userId: string;
+  };
+};
 
 @Controller('payments')
 @UseGuards(JwtAuthGuard)
@@ -12,7 +26,7 @@ export class PaymentsController {
    */
   @Post('create-order')
   async createOrder(
-    @Request() req,
+    @Request() req: AuthRequest,
     @Body() body: { formCode: string; amount: number; applicationId?: string },
   ) {
     const payment = await this.paymentsService.createOrder(
@@ -50,7 +64,7 @@ export class PaymentsController {
     try {
       console.log('\n=== PAYMENT VERIFICATION REQUEST ===');
       console.log('Body:', JSON.stringify(body, null, 2));
-      
+
       const payment = await this.paymentsService.updatePaymentStatus(
         body.razorpay_order_id,
         body.razorpay_payment_id,
@@ -67,15 +81,19 @@ export class PaymentsController {
         applicationId: payment.application_id,
         paymentId: payment.id,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Payment verification failed';
+      const stack = error instanceof Error ? error.stack : undefined;
+
       console.error('\n=== PAYMENT VERIFICATION ERROR ===');
-      console.error('Error:', error?.message || error);
-      console.error('Stack:', error?.stack);
+      console.error('Error:', message);
+      console.error('Stack:', stack);
       console.error('=== END ERROR ===\n');
-      
+
       return {
         success: false,
-        message: error?.message || 'Payment verification failed',
+        message,
       };
     }
   }
@@ -84,9 +102,11 @@ export class PaymentsController {
    * Get payment history for current user
    */
   @Get('history')
-  async getPaymentHistory(@Request() req) {
-    const payments = await this.paymentsService.getPaymentHistory(req.user.userId);
-    
+  async getPaymentHistory(@Request() req: AuthRequest) {
+    const payments = await this.paymentsService.getPaymentHistory(
+      req.user.userId,
+    );
+
     return payments.map((payment) => ({
       id: payment.id,
       orderId: payment.order_id,
@@ -104,9 +124,12 @@ export class PaymentsController {
    * Get payment details by application ID
    */
   @Get('application/:applicationId')
-  async getPaymentByApplicationId(@Param('applicationId') applicationId: string) {
-    const payment = await this.paymentsService.getPaymentByApplicationId(applicationId);
-    
+  async getPaymentByApplicationId(
+    @Param('applicationId') applicationId: string,
+  ) {
+    const payment =
+      await this.paymentsService.getPaymentByApplicationId(applicationId);
+
     if (!payment) {
       return { success: false, message: 'Payment not found' };
     }

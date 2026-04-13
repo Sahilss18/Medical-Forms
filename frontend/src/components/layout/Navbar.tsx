@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Menu, Bell, LogOut, User } from 'lucide-react';
+import { Menu, Bell, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../ui/Button';
 
 interface NavbarProps {
   onMenuClick: () => void;

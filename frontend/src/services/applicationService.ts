@@ -68,6 +68,7 @@ function normalizeApplication(raw: RawApplication): Application {
     assignedInspectorId: raw.assignedInspectorId || raw.assigned_inspector_id,
     assignedOfficerId: raw.assignedOfficerId || raw.assigned_officer_id,
     certificateUrl: raw.certificateUrl || raw.certificate_url,
+    inspection: raw.inspection || null,
   };
 }
 

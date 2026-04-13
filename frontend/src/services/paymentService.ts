@@ -38,20 +38,24 @@ export const paymentService = {
   ): Promise<VerifyPaymentResponse> {
     try {
       console.log('Calling verify API with:', { paymentData, applicationId });
-      const response = await apiClient.post('/payments/verify', {
+      const response = await apiClient.post<{
+        success?: boolean;
+        message?: string;
+        applicationId?: string;
+      }>('/payments/verify', {
         ...paymentData,
         applicationId,
       });
       console.log('Full response:', response);
       console.log('Response data:', response.data);
       
-      const data = response?.data || response;
+      const data = response?.data ?? {};
       console.log('Parsed data:', data);
       
       return {
-        success: data?.success !== false,
-        message: data?.message || 'Payment verified successfully',
-        applicationId: data?.applicationId || applicationId,
+        success: response.success && data.success !== false,
+        message: data.message || response.message || 'Payment verified successfully',
+        applicationId: data.applicationId || applicationId,
       };
     } catch (error: any) {
       console.error('Verify API error:', error);

@@ -25,7 +25,7 @@ const LicensingOffices: React.FC = () => {
   const [officeName, setOfficeName] = useState('');
   const [district, setDistrict] = useState('');
   const [state, setState] = useState('Tamil Nadu');
-  const [officeType, setOfficeType] = useState('DISTRICT');
+  const [officeType, setOfficeType] = useState<'STATE' | 'REGIONAL' | 'DISTRICT'>('DISTRICT');
 
   useEffect(() => {
     const loadOffices = async () => {
@@ -120,7 +120,9 @@ const LicensingOffices: React.FC = () => {
             <Select
               label="Office Type"
               value={officeType}
-              onChange={(event) => setOfficeType(event.target.value)}
+              onChange={(event) =>
+                setOfficeType(event.target.value as 'STATE' | 'REGIONAL' | 'DISTRICT')
+              }
               options={officeTypeOptions}
             />
             <div className="flex items-end">

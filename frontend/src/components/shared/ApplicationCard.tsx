@@ -1,9 +1,9 @@
 import React from 'react';
-import { Application, ApplicationStatus } from '@/types';
+import { Application } from '@/types';
 import { Card, CardBody, CardHeader } from '../ui/Card';
 import { StatusBadge } from '../ui/StatusBadge';
 import { formatDate } from '@/utils/helpers';
-import { FileText, Calendar, MapPin } from 'lucide-react';
+import { FileText, Calendar } from 'lucide-react';
 
 interface ApplicationCardProps {
   application: Application;

@@ -1,5 +1,12 @@
 import { DataSource } from 'typeorm';
 
+type AssignmentDocRow = {
+  inspection_id: string;
+  application_id: string;
+  documents_to_verify: unknown;
+  app_docs_count: number;
+};
+
 async function run() {
   const ds = new DataSource({
     type: 'postgres',
@@ -12,7 +19,7 @@ async function run() {
 
   await ds.initialize();
 
-  const rows = await ds.query(`
+  const rows = await ds.query<AssignmentDocRow[]>(`
     SELECT
       ia.id AS inspection_id,
       ia.application_id,

@@ -13,6 +13,7 @@ type InspectionItem = {
   institutionName?: string;
   district?: string;
   scheduledDate: string;
+  completedDate?: string;
   status: 'assigned' | 'in_progress' | 'completed';
 };
 
@@ -84,6 +85,15 @@ const InspectorDashboard: React.FC = () => {
   const upcoming = inspections
     .filter((item) => item.status !== 'completed')
     .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+    .slice(0, 5);
+
+  const lastReviewed = inspections
+    .filter((item) => item.status === 'completed')
+    .sort(
+      (a, b) =>
+        new Date(b.completedDate || b.scheduledDate).getTime() -
+        new Date(a.completedDate || a.scheduledDate).getTime(),
+    )
     .slice(0, 5);
 
   return (
@@ -198,6 +208,48 @@ const InspectorDashboard: React.FC = () => {
                           onClick={() => navigate(`/inspector/inspections/${item.id}`)}
                         >
                           View
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-xl font-semibold text-gray-900">Last 5 Reviewed Activities</h2>
+        </CardHeader>
+        <CardBody>
+          {lastReviewed.length === 0 ? (
+            <p className="text-sm text-gray-500">No completed reviews yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr className="text-left text-sm text-gray-500">
+                    <th className="py-2 pr-4">Inspection ID</th>
+                    <th className="py-2 pr-4">Institution</th>
+                    <th className="py-2 pr-4">Completed On</th>
+                    <th className="py-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {lastReviewed.map((item) => (
+                    <tr key={item.id} className="text-sm text-gray-900">
+                      <td className="py-3 pr-4 font-medium">{item.id}</td>
+                      <td className="py-3 pr-4">{item.institutionName || 'N/A'}</td>
+                      <td className="py-3 pr-4">{formatDate(item.completedDate || item.scheduledDate)}</td>
+                      <td className="py-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/inspector/inspections/${item.id}/report`)}
+                        >
+                          View Report
                         </Button>
                       </td>
                     </tr>

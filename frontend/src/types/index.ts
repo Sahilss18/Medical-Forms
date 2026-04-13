@@ -81,6 +81,29 @@ export interface Application {
   assignedInspectorId?: string;
   assignedOfficerId?: string;
   certificateUrl?: string;
+  inspection?: {
+    assignmentId: string;
+    status: string;
+    assignedAt?: string;
+    dueDate?: string;
+    specialInstructions?: string;
+    inspector?: {
+      id?: string;
+      userId?: string;
+      name?: string | null;
+      employeeCode?: string | null;
+    };
+    report?: {
+      id: string;
+      checklistItems: ChecklistItem[];
+      observations: string;
+      recommendation: 'approve' | 'reject' | 'clarification' | string | null;
+      complianceStatus?: string | null;
+      inspectionDate?: string;
+      submittedAt?: string;
+      photos?: ApplicationDocument[];
+    } | null;
+  } | null;
 }
 
 export interface ApplicationListItem {
@@ -271,6 +294,8 @@ export interface LicensingOffice {
   id: string;
   name: string;
   district: string;
+  state?: string;
+  officeType?: 'STATE' | 'REGIONAL' | 'DISTRICT';
   address: string;
   contactNumber: string;
   email: string;

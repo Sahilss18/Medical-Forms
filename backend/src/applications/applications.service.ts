@@ -287,6 +287,46 @@ export class ApplicationsService {
     });
   }
 
+  async getLatestInspectionDetails(applicationId: string) {
+    const assignment = await this.assignmentRepository.findOne({
+      where: { application_id: applicationId },
+      relations: ['inspector', 'inspector.user', 'report'],
+      order: { assigned_at: 'DESC' },
+    });
+
+    if (!assignment) {
+      return null;
+    }
+
+    const report = assignment.report;
+
+    return {
+      assignmentId: assignment.id,
+      status: assignment.status,
+      assignedAt: assignment.assigned_at,
+      dueDate: assignment.due_date,
+      specialInstructions: assignment.special_instructions,
+      inspector: {
+        id: assignment.inspector?.id,
+        userId: assignment.inspector?.user_id,
+        name: assignment.inspector?.user?.name || null,
+        employeeCode: assignment.inspector?.employee_code || null,
+      },
+      report: report
+        ? {
+            id: report.id,
+            checklistItems: report.checklist_items || [],
+            observations: report.observations || '',
+            recommendation: report.recommendation || null,
+            complianceStatus: report.compliance_status || null,
+            inspectionDate: report.inspection_date,
+            submittedAt: report.submitted_at,
+            photos: report.photos || [],
+          }
+        : null,
+    };
+  }
+
   async getStats(filters?: { officeId?: string }): Promise<{
     total: number;
     pending: number;

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
-import * as crypto from 'crypto';
 
 @Injectable()
 export class PaymentsService {
@@ -22,7 +21,7 @@ export class PaymentsService {
   ): Promise<Payment> {
     // Generate order ID
     const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // In production, you would integrate with Razorpay API to create actual order
     const razorpayOrderId = `rzp_test_${Math.random().toString(36).substr(2, 16)}`;
 
@@ -55,6 +54,9 @@ export class PaymentsService {
     //   .update(`${razorpayOrderId}|${razorpayPaymentId}`)
     //   .digest('hex');
     // return generatedSignature === razorpaySignature;
+
+    // Keep parameters referenced in demo mode to satisfy strict linting.
+    void `${razorpayOrderId}|${razorpayPaymentId}|${razorpaySignature}`;
 
     // For demo purposes, always return true
     return true;
@@ -92,14 +94,17 @@ export class PaymentsService {
     if (!payment) {
       // List all recent payments for debugging
       const recentPayments = await this.paymentsRepository.find({
-        order: { created_at: 'DESC' as any },
+        order: { created_at: 'DESC' },
         take: 5,
       });
-      console.log('Recent payments:', recentPayments.map(p => ({
-        id: p.id,
-        razorpay_order_id: p.razorpay_order_id,
-        status: p.status,
-      })));
+      console.log(
+        'Recent payments:',
+        recentPayments.map((p) => ({
+          id: p.id,
+          razorpay_order_id: p.razorpay_order_id,
+          status: p.status,
+        })),
+      );
       throw new Error(`Payment not found for order ID: ${razorpayOrderId}`);
     }
 
@@ -107,7 +112,7 @@ export class PaymentsService {
     payment.razorpay_payment_id = razorpayPaymentId;
     payment.razorpay_signature = razorpaySignature;
     payment.status = 'success';
-    
+
     if (applicationId) {
       payment.application_id = applicationId;
     }
@@ -121,7 +126,7 @@ export class PaymentsService {
   async getPaymentHistory(userId: string): Promise<Payment[]> {
     return await this.paymentsRepository.find({
       where: { user_id: userId },
-      order: { created_at: 'DESC' as any },
+      order: { created_at: 'DESC' },
       relations: ['application'],
     });
   }
@@ -129,7 +134,9 @@ export class PaymentsService {
   /**
    * Get payment by application ID
    */
-  async getPaymentByApplicationId(applicationId: string): Promise<Payment | null> {
+  async getPaymentByApplicationId(
+    applicationId: string,
+  ): Promise<Payment | null> {
     return await this.paymentsRepository.findOne({
       where: { application_id: applicationId },
       relations: ['user'],
@@ -141,7 +148,7 @@ export class PaymentsService {
    */
   async getPaymentById(paymentId: string): Promise<Payment | null> {
     return await this.paymentsRepository.findOne({
-      where: { id: paymentId } as any,
+      where: { id: paymentId },
       relations: ['application', 'user'],
     });
   }

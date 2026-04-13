@@ -3,7 +3,7 @@ import { User, LoginCredentials, OTPVerification, ApiResponse } from '@/types';
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
-    const response = await apiClient.post('/auth/login', credentials);
+    const response = await apiClient.post<{ user: User; access_token: string }>('/auth/login', credentials);
     // Backend returns access_token, map it to token for frontend compatibility
     return {
       ...response,

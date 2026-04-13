@@ -8,6 +8,16 @@ import { DataSource } from 'typeorm';
 import * as fs from 'fs';
 import * as path from 'path';
 
+type EnumValueRow = {
+  status_value: string;
+};
+
+type ColumnInfoRow = {
+  column_name: string;
+  data_type: string;
+  is_nullable: string;
+};
+
 const runMigration = async () => {
   console.log('🚀 Starting Inspector System Migration...\n');
 
@@ -33,15 +43,15 @@ const runMigration = async () => {
     // Split by semicolon and filter out comments/empty lines
     const statements = sqlContent
       .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !s.startsWith('--'));
 
     console.log(`📋 Found ${statements.length} SQL statements to execute\n`);
 
     // Execute each statement
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i];
-      
+
       // Skip comment blocks
       if (statement.startsWith('/*') || statement.includes('RAISE NOTICE')) {
         continue;
@@ -51,8 +61,10 @@ const runMigration = async () => {
         console.log(`⚙️  Executing statement ${i + 1}/${statements.length}...`);
         await dataSource.query(statement);
         console.log(`   ✅ Success\n`);
-      } catch (error: any) {
-        console.error(`   ❌ Error: ${error.message}\n`);
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown SQL error';
+        console.error(`   ❌ Error: ${message}\n`);
         // Continue with other statements
       }
     }
@@ -61,18 +73,18 @@ const runMigration = async () => {
     console.log('🔍 Verifying migration results...\n');
 
     // Check enum values
-    const enumValues = await dataSource.query(`
+    const enumValues = await dataSource.query<EnumValueRow[]>(`
       SELECT enumlabel as status_value
       FROM pg_enum
       WHERE enumtypid = (SELECT oid FROM pg_type WHERE typname = 'inspection_status')
       ORDER BY enumsortorder
     `);
     console.log('📊 Inspection Status Enum Values:');
-    enumValues.forEach((row: any) => console.log(`   - ${row.status_value}`));
+    enumValues.forEach((row) => console.log(`   - ${row.status_value}`));
     console.log();
 
     // Check new columns
-    const columns = await dataSource.query(`
+    const columns = await dataSource.query<ColumnInfoRow[]>(`
       SELECT 
         column_name, 
         data_type,
@@ -82,23 +94,30 @@ const runMigration = async () => {
       AND column_name IN ('checklist_items', 'observations', 'recommendation', 'inspection_date', 'photos')
       ORDER BY ordinal_position
     `);
-    
+
     console.log('📊 Inspection Reports New Columns:');
     if (columns.length > 0) {
-      columns.forEach((col: any) => {
-        console.log(`   - ${col.column_name} (${col.data_type}, nullable: ${col.is_nullable})`);
+      columns.forEach((col) => {
+        console.log(
+          `   - ${col.column_name} (${col.data_type}, nullable: ${col.is_nullable})`,
+        );
       });
     } else {
-      console.log('   ⚠️  No new columns found - may need to run ALTER TABLE statements');
+      console.log(
+        '   ⚠️  No new columns found - may need to run ALTER TABLE statements',
+      );
     }
     console.log();
 
     console.log('🎉 Migration completed successfully!');
     console.log('✅ Inspector Field Verification Officer system is ready.\n');
-
-  } catch (error: any) {
-    console.error('❌ Migration failed:', error.message);
-    console.error(error.stack);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('❌ Migration failed:', error.message);
+      console.error(error.stack);
+    } else {
+      console.error('❌ Migration failed:', error);
+    }
     process.exit(1);
   } finally {
     // Close connection

@@ -6,7 +6,6 @@ import { Building2, Save, Edit2 } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { institutionService } from '@/services/institutionService';
 import toast from 'react-hot-toast';

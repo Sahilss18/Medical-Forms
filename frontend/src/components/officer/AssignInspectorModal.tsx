@@ -176,7 +176,7 @@ export const AssignInspectorModal: React.FC<AssignInspectorModalProps> = ({
                     <ul className="text-xs text-gray-700 space-y-1">
                       {documents
                         .filter(doc => documentReviews[doc.id] === 'needs_review')
-                        .map((doc, idx) => (
+                        .map((doc) => (
                           <li key={doc.id} className="flex items-start">
                             <span className="text-yellow-600 mr-1">•</span>
                             <span className="flex-1">{doc.name}</span>

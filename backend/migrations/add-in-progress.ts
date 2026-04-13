@@ -3,6 +3,10 @@
  */
 import { DataSource } from 'typeorm';
 
+type EnumRow = {
+  enumlabel: string;
+};
+
 const addEnumValue = async () => {
   const ds = new DataSource({
     type: 'postgres',
@@ -10,7 +14,7 @@ const addEnumValue = async () => {
     port: 5432,
     username: 'postgres',
     password: 'Sahil18&',
-    database: 'medical_forms'
+    database: 'medical_forms',
   });
 
   try {
@@ -19,7 +23,7 @@ const addEnumValue = async () => {
 
     // Check current enum values
     console.log('📋 Current enum values:');
-    const currentValues = await ds.query(`
+    const currentValues = await ds.query<EnumRow[]>(`
       SELECT enumlabel 
       FROM pg_enum 
       WHERE enumtypid = (
@@ -27,23 +31,27 @@ const addEnumValue = async () => {
       )
       ORDER BY enumsortorder
     `);
-    currentValues.forEach((v: any) => console.log(`   - ${v.enumlabel}`));
+    currentValues.forEach((v) => console.log(`   - ${v.enumlabel}`));
     console.log();
 
     // Check if IN_PROGRESS already exists
-    const hasInProgress = currentValues.some((v: any) => v.enumlabel === 'IN_PROGRESS');
-    
+    const hasInProgress = currentValues.some(
+      (v) => v.enumlabel === 'IN_PROGRESS',
+    );
+
     if (hasInProgress) {
       console.log('ℹ️  IN_PROGRESS already exists in enum\n');
     } else {
       console.log('⚙️  Adding IN_PROGRESS to enum...');
-      await ds.query(`ALTER TYPE inspection_assignments_status_enum ADD VALUE 'IN_PROGRESS'`);
+      await ds.query(
+        `ALTER TYPE inspection_assignments_status_enum ADD VALUE 'IN_PROGRESS'`,
+      );
       console.log('✅ IN_PROGRESS added successfully\n');
     }
 
     // Verify
     console.log('📋 Updated enum values:');
-    const updatedValues = await ds.query(`
+    const updatedValues = await ds.query<EnumRow[]>(`
       SELECT enumlabel 
       FROM pg_enum 
       WHERE enumtypid = (
@@ -51,14 +59,15 @@ const addEnumValue = async () => {
       )
       ORDER BY enumsortorder
     `);
-    updatedValues.forEach((v: any) => console.log(`   - ${v.enumlabel}`));
+    updatedValues.forEach((v) => console.log(`   - ${v.enumlabel}`));
     console.log();
 
     console.log('🎉 Migration completed!');
 
     await ds.destroy();
-  } catch (error: any) {
-    console.error('❌ Error:', error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Error:', message);
     throw error;
   }
 };

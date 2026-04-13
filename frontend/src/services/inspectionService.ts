@@ -3,7 +3,6 @@ import {
   Inspection,
   InspectionReport,
   ApiResponse,
-  PaginatedResponse,
   ChecklistItem,
 } from '@/types';
 
@@ -45,6 +44,7 @@ export const inspectionService = {
   async submitReport(
     inspectionId: string,
     data: {
+      inspectionDate?: string;
       checklistItems: ChecklistItem[];
       observations: string;
       recommendation: 'approve' | 'reject' | 'clarification';
@@ -53,6 +53,9 @@ export const inspectionService = {
   ): Promise<ApiResponse<InspectionReport>> {
     if (data.photos && data.photos.length > 0) {
       const formData = new FormData();
+      if (data.inspectionDate) {
+        formData.append('inspectionDate', data.inspectionDate);
+      }
       formData.append('checklistItems', JSON.stringify(data.checklistItems));
       formData.append('observations', data.observations);
       formData.append('recommendation', data.recommendation);
@@ -61,6 +64,7 @@ export const inspectionService = {
     }
 
     return apiClient.post(`/inspections/${inspectionId}/report`, {
+      inspectionDate: data.inspectionDate,
       checklistItems: data.checklistItems,
       observations: data.observations,
       recommendation: data.recommendation,

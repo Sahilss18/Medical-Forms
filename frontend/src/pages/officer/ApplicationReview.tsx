@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   FileText,
-  Download,
   CheckCircle,
   XCircle,
   MessageSquare,
@@ -11,10 +10,9 @@ import {
   Building2,
   AlertCircle,
   Check,
-  X,
   Eye,
 } from 'lucide-react';
-import { Application, DynamicForm } from '@/types';
+import { Application, DynamicForm, FormField } from '@/types';
 import { applicationService } from '@/services/applicationService';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
@@ -42,6 +40,7 @@ const ApplicationReview: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [documentReviews, setDocumentReviews] = useState<DocumentReview>({});
+  const [showReportPhotos, setShowReportPhotos] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -312,8 +311,9 @@ const ApplicationReview: React.FC = () => {
                   <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     {Object.entries(application.formData).map(([fieldName, value]) => {
                       // Find the field definition to get the label
-                      const fieldDef = formDefinition?.fields?.find(
-                        f => f.name === fieldName || f.id === fieldName
+                      const formFields = formDefinition?.sections?.flatMap((section) => section.fields) || [];
+                      const fieldDef = formFields.find(
+                        (f: FormField) => f.name === fieldName || f.id === fieldName,
                       );
                       const label = fieldDef?.label || 
                         fieldName.replace(/_/g, ' ')
@@ -501,6 +501,122 @@ const ApplicationReview: React.FC = () => {
               <Timeline events={application.timeline} />
             </CardBody>
           </Card>
+
+          {/* Inspector Report */}
+          {application.inspection && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center">
+                  <UserCheck className="h-5 w-5 mr-2 text-primary-600" />
+                  <h2 className="text-xl font-semibold">Inspection Report</h2>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <dl className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Inspector</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {application.inspection.inspector?.name || 'Not assigned'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Employee Code</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {application.inspection.inspector?.employeeCode || 'N/A'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Inspection Status</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {String(application.inspection.status || 'N/A').replace(/_/g, ' ')}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Report Submitted</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {application.inspection.report?.submittedAt
+                        ? formatDate(application.inspection.report.submittedAt)
+                        : 'Not submitted yet'}
+                    </dd>
+                  </div>
+                </dl>
+
+                {application.inspection.report ? (
+                  <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-800">Inspector Recommendation</h3>
+                      <p className="mt-1 text-sm text-gray-900 capitalize">
+                        {(application.inspection.report.recommendation || 'clarification').replace(/_/g, ' ')}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-800">Observations</h3>
+                      <p className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">
+                        {application.inspection.report.observations || 'No observations provided.'}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-800">Checklist Items</h3>
+                        <p className="mt-1 text-sm text-gray-700">
+                          {application.inspection.report.checklistItems?.length || 0}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-800">Photos Uploaded</h3>
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className="text-sm text-gray-700">
+                            {application.inspection.report.photos?.length || 0}
+                          </p>
+                          {(application.inspection.report.photos?.length || 0) > 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setShowReportPhotos((prev) => !prev)}
+                            >
+                              {showReportPhotos ? 'Hide' : 'View'}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {showReportPhotos && (application.inspection.report.photos?.length || 0) > 0 && (
+                      <div className="rounded-md border border-gray-200 bg-white p-3">
+                        <h4 className="text-sm font-semibold text-gray-800 mb-2">Submitted Photos</h4>
+                        <div className="space-y-2">
+                          {application.inspection.report.photos?.map((photo, index) => {
+                            const photoUrl = photo.url?.startsWith('http')
+                              ? photo.url
+                              : `${API_BASE_URL}${photo.url}`;
+
+                            return (
+                              <div key={photo.id || `${photo.name}-${index}`} className="flex items-center justify-between">
+                                <span className="text-sm text-gray-700 truncate pr-4">{photo.name || `Photo ${index + 1}`}</span>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => window.open(photoUrl, '_blank')}
+                                >
+                                  Open
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    Inspector assigned, but report is not submitted yet.
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}

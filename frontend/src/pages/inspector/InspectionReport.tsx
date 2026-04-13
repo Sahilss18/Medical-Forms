@@ -55,7 +55,9 @@ const InspectionReport: React.FC = () => {
         const response = await inspectionService.getReport(id);
         if (response.success && response.data) {
           const report = response.data;
-          setInspectionDate(report.inspectionDate || new Date().toISOString().split('T')[0]);
+          setInspectionDate(
+            report.submittedAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+          );
           setChecklistItems(report.checklistItems || []);
           setObservations(report.observations || '');
           setRecommendation(report.recommendation || 'approve');
@@ -123,21 +125,15 @@ const InspectionReport: React.FC = () => {
       setIsSubmitting(true);
       console.log('📤 Submitting inspection report...');
 
-      // Prepare form data for file upload
-      const formData = new FormData();
-      formData.append('inspectionDate', inspectionDate);
-      formData.append('checklistItems', JSON.stringify(checklistItems));
-      formData.append('observations', observations);
-      formData.append('recommendation', recommendation);
-
-      // Append photos
-      photos.forEach((photo) => {
-        formData.append('photos', photo.file);
-      });
-
       console.log(`📸 Uploading ${photos.length} photos`);
 
-      await inspectionService.submitReport(id, formData as any);
+      await inspectionService.submitReport(id, {
+        inspectionDate,
+        checklistItems,
+        observations,
+        recommendation,
+        photos: photos.map((photo) => photo.file),
+      });
       
       toast.success('Inspection report submitted successfully! Officer will review your findings.');
       navigate('/inspector/dashboard');

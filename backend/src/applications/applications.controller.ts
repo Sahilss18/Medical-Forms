@@ -142,11 +142,15 @@ export class ApplicationsController {
     const timeline = await this.applicationsService.getTimeline(id);
     console.log('📅 Timeline events:', timeline.length);
 
+    // Attach latest inspector assignment/report details for officer review.
+    const inspection = await this.applicationsService.getLatestInspectionDetails(id);
+
     // Transform documents to match frontend format
     const transformedApplication = {
       ...application,
       formData,
       timeline,
+      inspection,
       documents: (application.documents || []).map(doc => ({
         id: doc.id,
         name: doc.document_type || 'Document',

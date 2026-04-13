@@ -6,47 +6,47 @@ import { User } from '../../users/entities/user.entity';
 @Entity('payments')
 export class Payment extends BaseEntity {
   @Column()
-  order_id: string;
+  order_id!: string;
 
   @Column({ nullable: true })
-  razorpay_order_id: string;
+  razorpay_order_id!: string;
 
   @Column({ nullable: true })
-  razorpay_payment_id: string;
+  razorpay_payment_id!: string;
 
   @Column({ nullable: true })
-  razorpay_signature: string;
+  razorpay_signature!: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  amount: number;
+  amount!: number;
 
   @Column({ default: 'INR' })
-  currency: string;
+  currency!: string;
 
   @Column()
-  form_code: string;
+  form_code!: string;
 
   @Column({
     type: 'enum',
     enum: ['pending', 'success', 'failed'],
     default: 'pending',
   })
-  status: string;
+  status!: string;
 
   @Column({ nullable: true })
-  application_id: string;
+  application_id!: string;
 
   @ManyToOne(() => Application, { nullable: true })
   @JoinColumn({ name: 'application_id' })
-  application: Application;
+  application!: Application;
 
   @Column()
-  user_id: string;
+  user_id!: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user!: User;
 
   @Column({ type: 'text', nullable: true })
-  notes: string;
+  notes!: string;
 }
