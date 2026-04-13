@@ -101,6 +101,55 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
 
       return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
     }
+
+    if (formCode === '19B') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Licence Type',
+          description: 'Select the applicable licence type',
+          fields: allFields.filter((f) => f.order_index === 1),
+        },
+        {
+          stepNumber: 2,
+          title: 'Applicant Details',
+          description: 'Enter applicant contact and identification details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 2 && f.order_index <= 5),
+        },
+        {
+          stepNumber: 3,
+          title: 'Premises Details',
+          description: 'Provide the premises and storage details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 6 && f.order_index <= 9),
+        },
+        {
+          stepNumber: 4,
+          title: 'Competent Person Details',
+          description: 'Required only if the selected licence type is Retail',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 10 && f.order_index <= 12),
+        },
+        {
+          stepNumber: 5,
+          title: 'Document Uploads',
+          description: 'Upload the form-specific mandatory documents',
+          fields: [],
+        },
+        {
+          stepNumber: 6,
+          title: 'Declaration & Signature',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 13 && f.order_index <= 15),
+        },
+        {
+          stepNumber: 7,
+          title: 'Review & Payment',
+          description: 'Review the completed application before proceeding to payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
+    }
     
     // Define step ranges
     const steps: FormStep[] = [
@@ -408,6 +457,9 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
   };
 
   const currentStepData = steps[currentStep];
+  const visibleCurrentStepFields = currentStepData.fields.filter((field) => shouldShowField(field));
+  const isReviewStep = /review/i.test(currentStepData.title);
+  const isFeePaymentStep = /fee payment/i.test(currentStepData.title);
 
   // Safety check - if no steps are available, show error
   if (!steps || steps.length === 0) {
@@ -496,7 +548,7 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
               onFilesChange={(documentId, files) => onDocumentFilesChange?.(documentId, files)}
               getAllowedMimeTypes={getAllowedMimeTypes}
             />
-          ) : currentStepData.fields.length > 0 ? (
+          ) : visibleCurrentStepFields.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {currentStepData.fields.map((field) => (
                 <div
@@ -508,33 +560,46 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
               ))}
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-blue-900 mb-3">Review Your Application</h3>
-                <p className="text-blue-700 mb-4">
-                  Please review all the information you've provided before proceeding to payment.
-                  You can go back to any previous step to make changes if needed.
-                </p>
-                <div className="bg-white rounded-lg p-4 border border-blue-200">
-                  <h4 className="font-medium text-gray-900 mb-2">Summary:</h4>
-                  <ul className="space-y-2 text-sm text-gray-600">
-                    {steps
-                      .filter((step) => step.stepNumber !== 6)
-                      .map((step) => (
-                        <li key={step.stepNumber} className="flex items-center">
-                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                          Step {step.stepNumber}: {step.title} - Completed
-                        </li>
-                      ))}
-                  </ul>
+            isReviewStep ? (
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-3">Review Your Application</h3>
+                  <p className="text-blue-700 mb-4">
+                    Please review all the information you've provided before proceeding to payment.
+                    You can go back to any previous step to make changes if needed.
+                  </p>
+                  <div className="bg-white rounded-lg p-4 border border-blue-200">
+                    <h4 className="font-medium text-gray-900 mb-2">Summary:</h4>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      {steps
+                        .filter((step) => step.stepNumber !== currentStepData.stepNumber)
+                        .map((step) => (
+                          <li key={step.stepNumber} className="flex items-center">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            Step {step.stepNumber}: {step.title} - Completed
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-green-800">
+                    ✓ All information has been submitted. Click "Proceed to Payment" to complete your application.
+                  </p>
                 </div>
               </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-green-800">
-                  ✓ All information has been submitted. Click "Proceed to Payment" to complete your application.
+            ) : isFeePaymentStep ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-6">
+                <h3 className="text-lg font-semibold text-amber-900 mb-2">Fee Payment</h3>
+                <p className="text-sm text-amber-800">
+                  Review the fee details and continue. The payment modal will open when you complete the final submission step.
                 </p>
               </div>
-            </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600">
+                No additional details are required for the selected licence type. Click Next to continue.
+              </div>
+            )
           )}
 
           {/* Navigation Buttons */}

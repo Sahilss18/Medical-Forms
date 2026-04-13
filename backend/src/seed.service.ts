@@ -896,6 +896,191 @@ export class SeedService implements OnApplicationBootstrap {
       console.log(`✓ Added ${missingForm19AFields.length} missing Form 19A fields`);
     }
 
+    // Ensure Form 19B exists - Homoeopathic Medicine Sale
+    let form19B = await this.formRepository.findOne({
+      where: { form_code: '19B' },
+    });
+
+    if (!form19B) {
+      form19B = await this.formRepository.save({
+        form_code: '19B',
+        title: 'Homoeopathic Medicine Sale',
+        requires_inspection: true,
+      });
+      console.log('✓ Created Form 19B');
+    }
+
+    const form19BFields = [
+      // Step 1: Licence Type
+      {
+        label: 'Licence Type',
+        field_name: 'licence_type',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: {
+          options: ['Retail', 'Wholesale', 'Retail and Wholesale'],
+        },
+      },
+
+      // Step 2: Applicant Details
+      {
+        label: 'Applicant Name',
+        field_name: 'applicant_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 2,
+      },
+      {
+        label: 'Applicant Address',
+        field_name: 'applicant_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 3,
+      },
+      {
+        label: 'Contact Number',
+        field_name: 'applicant_contact',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 4,
+      },
+      {
+        label: 'Email Address',
+        field_name: 'applicant_email',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 5,
+      },
+
+      // Step 3: Premises Details
+      {
+        label: 'Premises Address',
+        field_name: 'premises_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 6,
+      },
+      {
+        label: 'Premises Area (sq ft)',
+        field_name: 'premises_area',
+        field_type: FieldType.NUMBER,
+        required: true,
+        order_index: 7,
+      },
+      {
+        label: 'Premises Type',
+        field_name: 'premises_type',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 8,
+        validation_rules: {
+          options: ['Owned', 'Rented', 'Leased'],
+        },
+      },
+      {
+        label: 'Storage Facility Details',
+        field_name: 'storage_facility_details',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 9,
+      },
+
+      // Step 4: Competent Person Details (Retail only)
+      {
+        label: 'Competent Person Name',
+        field_name: 'competent_person_name',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 10,
+        validation_rules: {
+          conditional: { field: 'licence_type', value: 'Retail' },
+        },
+      },
+      {
+        label: 'In-charge / Designation',
+        field_name: 'incharge_designation',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 11,
+        validation_rules: {
+          conditional: { field: 'licence_type', value: 'Retail' },
+        },
+      },
+      {
+        label: 'Competent Person Qualification',
+        field_name: 'competent_person_qualification',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 12,
+        validation_rules: {
+          conditional: { field: 'licence_type', value: 'Retail' },
+        },
+      },
+
+      // Step 6: Declaration & Digital Signature
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 13,
+        validation_rules: {
+          options: ['Yes, I declare that the above information is true'],
+        },
+      },
+      {
+        label: 'Digital Signature Name',
+        field_name: 'digital_signature_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 14,
+      },
+      {
+        label: 'Digital Signature Date',
+        field_name: 'digital_signature_date',
+        field_type: FieldType.DATE,
+        required: true,
+        order_index: 15,
+      },
+    ];
+
+    const existingForm19BFields = await this.fieldRepository.find({
+      where: { form_id: form19B.id },
+      order: { created_at: 'ASC' },
+    });
+
+    const form19BFieldsMap = new Map(
+      form19BFields.map((field) => [field.field_name, field]),
+    );
+
+    const obsoleteForm19BFields = existingForm19BFields.filter(
+      (field) => !form19BFieldsMap.has(field.field_name),
+    );
+
+    if (obsoleteForm19BFields.length > 0) {
+      await this.fieldRepository.remove(obsoleteForm19BFields);
+      console.log(`✓ Removed ${obsoleteForm19BFields.length} obsolete Form 19B fields`);
+    }
+
+    const existingForm19BFieldNames = new Set(
+      existingForm19BFields.map((field) => field.field_name),
+    );
+
+    const missingForm19BFields = form19BFields.filter(
+      (field) => !existingForm19BFieldNames.has(field.field_name),
+    );
+
+    if (missingForm19BFields.length > 0) {
+      await this.fieldRepository.save(
+        missingForm19BFields.map((field) => ({
+          form: form19B as Form,
+          ...field,
+        })),
+      );
+      console.log(`✓ Added ${missingForm19BFields.length} missing Form 19B fields`);
+    }
+
     console.log('Seed check complete.');
   }
 }
