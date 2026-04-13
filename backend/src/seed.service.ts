@@ -1081,6 +1081,437 @@ export class SeedService implements OnApplicationBootstrap {
       console.log(`✓ Added ${missingForm19BFields.length} missing Form 19B fields`);
     }
 
+    // Ensure Form 19C exists - Schedule X Drug Sale
+    let form19C = await this.formRepository.findOne({
+      where: { form_code: '19C' },
+    });
+
+    if (!form19C) {
+      form19C = await this.formRepository.save({
+        form_code: '19C',
+        title: 'Schedule X Drug Sale',
+        requires_inspection: true,
+      });
+      console.log('✓ Created Form 19C');
+    }
+
+    const form19CFields = [
+      // Step 1: Licence Type
+      {
+        label: 'Licence Type',
+        field_name: 'licence_type',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: {
+          options: ['Retail', 'Wholesale'],
+        },
+      },
+
+      // Step 2: Applicant Details
+      {
+        label: 'Applicant Name',
+        field_name: 'applicant_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 2,
+      },
+      {
+        label: 'Applicant Address',
+        field_name: 'applicant_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 3,
+      },
+      {
+        label: 'Contact Number',
+        field_name: 'applicant_contact',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 4,
+      },
+      {
+        label: 'Email Address',
+        field_name: 'applicant_email',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 5,
+      },
+
+      // Step 3: Pharmacy / Premises Address
+      {
+        label: 'Pharmacy Name',
+        field_name: 'pharmacy_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 6,
+      },
+      {
+        label: 'Premises Address',
+        field_name: 'premises_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 7,
+      },
+      {
+        label: 'Premises Area (sq ft)',
+        field_name: 'premises_area',
+        field_type: FieldType.NUMBER,
+        required: true,
+        order_index: 8,
+      },
+
+      // Step 4: Qualified Person Details (Retail only)
+      {
+        label: 'Qualified Person Name',
+        field_name: 'qualified_person_name',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 9,
+        validation_rules: {
+          conditional: { field: 'licence_type', value: 'Retail' },
+        },
+      },
+      {
+        label: 'Qualified Person Qualification',
+        field_name: 'qualified_person_qualification',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 10,
+        validation_rules: {
+          conditional: { field: 'licence_type', value: 'Retail' },
+        },
+      },
+      {
+        label: 'Qualified Person Registration Number',
+        field_name: 'qualified_person_registration',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 11,
+        validation_rules: {
+          conditional: { field: 'licence_type', value: 'Retail' },
+        },
+      },
+
+      // Step 5: Schedule X Drug Details
+      {
+        label: 'Schedule X Drug Names',
+        field_name: 'schedule_x_drug_names',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 12,
+      },
+      {
+        label: 'Expected Quantity to be Sold',
+        field_name: 'schedule_x_quantity',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 13,
+      },
+      {
+        label: 'Supplier / Source Details',
+        field_name: 'schedule_x_source_details',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 14,
+      },
+
+      // Step 6: Special Storage Details
+      {
+        label: 'Special Storage Required',
+        field_name: 'special_storage_required',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 15,
+        validation_rules: {
+          options: ['Yes', 'No'],
+        },
+      },
+      {
+        label: 'Storage Details',
+        field_name: 'special_storage_details',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 16,
+        validation_rules: {
+          conditional: { field: 'special_storage_required', value: 'Yes' },
+        },
+      },
+      {
+        label: 'Storage Accommodation Information',
+        field_name: 'storage_accommodation_info',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 17,
+        validation_rules: {
+          conditional: { field: 'special_storage_required', value: 'Yes' },
+        },
+      },
+
+      // Step 8: Declaration & Submit
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 18,
+        validation_rules: {
+          options: ['Yes, I confirm all details are accurate'],
+        },
+      },
+      {
+        label: 'Digital Signature Name',
+        field_name: 'digital_signature_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 19,
+      },
+      {
+        label: 'Digital Signature Date',
+        field_name: 'digital_signature_date',
+        field_type: FieldType.DATE,
+        required: true,
+        order_index: 20,
+      },
+    ];
+
+    const existingForm19CFields = await this.fieldRepository.find({
+      where: { form_id: form19C.id },
+      order: { created_at: 'ASC' },
+    });
+
+    const form19CFieldsMap = new Map(
+      form19CFields.map((field) => [field.field_name, field]),
+    );
+
+    const obsoleteForm19CFields = existingForm19CFields.filter(
+      (field) => !form19CFieldsMap.has(field.field_name),
+    );
+
+    if (obsoleteForm19CFields.length > 0) {
+      await this.fieldRepository.remove(obsoleteForm19CFields);
+      console.log(`✓ Removed ${obsoleteForm19CFields.length} obsolete Form 19C fields`);
+    }
+
+    const existingForm19CFieldNames = new Set(
+      existingForm19CFields.map((field) => field.field_name),
+    );
+
+    const missingForm19CFields = form19CFields.filter(
+      (field) => !existingForm19CFieldNames.has(field.field_name),
+    );
+
+    if (missingForm19CFields.length > 0) {
+      await this.fieldRepository.save(
+        missingForm19CFields.map((field) => ({
+          form: form19C as Form,
+          ...field,
+        })),
+      );
+      console.log(`✓ Added ${missingForm19CFields.length} missing Form 19C fields`);
+    }
+
+    // Ensure Form 24 exists - Drug Manufacturing (General)
+    let form24 = await this.formRepository.findOne({
+      where: { form_code: '24' },
+    });
+
+    if (!form24) {
+      form24 = await this.formRepository.save({
+        form_code: '24',
+        title: 'Drug Manufacturing (General)',
+        requires_inspection: true,
+      });
+      console.log('✓ Created Form 24');
+    }
+
+    const form24Fields = [
+      // Step 1: Applicant Details
+      {
+        label: 'Applicant Name',
+        field_name: 'applicant_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 1,
+      },
+      {
+        label: 'Applicant Address',
+        field_name: 'applicant_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 2,
+      },
+      {
+        label: 'Contact Number',
+        field_name: 'applicant_contact',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 3,
+      },
+      {
+        label: 'Email Address',
+        field_name: 'applicant_email',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 4,
+      },
+
+      // Step 2: Manufacturing Premises Details
+      {
+        label: 'Manufacturing Premises Address',
+        field_name: 'manufacturing_premises_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 5,
+      },
+      {
+        label: 'Premises Area (sq ft)',
+        field_name: 'premises_area',
+        field_type: FieldType.NUMBER,
+        required: true,
+        order_index: 6,
+      },
+      {
+        label: 'Premises Layout Details',
+        field_name: 'premises_layout_details',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 7,
+      },
+      {
+        label: 'Application Type',
+        field_name: 'application_type',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 8,
+        validation_rules: {
+          options: ['Grant', 'Renewal'],
+        },
+      },
+
+      // Step 3: Drug Details
+      {
+        label: 'Drug Names (Schedule M)',
+        field_name: 'drug_names_schedule_m',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 9,
+      },
+      {
+        label: 'Drug Categories',
+        field_name: 'drug_categories',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 10,
+      },
+      {
+        label: 'Dosage Forms',
+        field_name: 'dosage_forms',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 11,
+      },
+      {
+        label: 'Manufacturing Capacity',
+        field_name: 'manufacturing_capacity',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 12,
+      },
+
+      // Step 4: Technical Staff Details
+      {
+        label: 'Technical Staff Name',
+        field_name: 'technical_staff_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 13,
+      },
+      {
+        label: 'Technical Staff Qualification',
+        field_name: 'technical_staff_qualification',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 14,
+      },
+      {
+        label: 'Technical Staff Experience (Years)',
+        field_name: 'technical_staff_experience',
+        field_type: FieldType.NUMBER,
+        required: true,
+        order_index: 15,
+      },
+      {
+        label: 'Supervising Pharmacist Registration Number',
+        field_name: 'supervising_pharmacist_registration',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 16,
+      },
+
+      // Step 6: Declaration & Submit
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 17,
+        validation_rules: {
+          options: ['Yes, I confirm all details are accurate'],
+        },
+      },
+      {
+        label: 'Digital Signature Name',
+        field_name: 'digital_signature_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 18,
+      },
+      {
+        label: 'Digital Signature Date',
+        field_name: 'digital_signature_date',
+        field_type: FieldType.DATE,
+        required: true,
+        order_index: 19,
+      },
+    ];
+
+    const existingForm24Fields = await this.fieldRepository.find({
+      where: { form_id: form24.id },
+      order: { created_at: 'ASC' },
+    });
+
+    const form24FieldsMap = new Map(
+      form24Fields.map((field) => [field.field_name, field]),
+    );
+
+    const obsoleteForm24Fields = existingForm24Fields.filter(
+      (field) => !form24FieldsMap.has(field.field_name),
+    );
+
+    if (obsoleteForm24Fields.length > 0) {
+      await this.fieldRepository.remove(obsoleteForm24Fields);
+      console.log(`✓ Removed ${obsoleteForm24Fields.length} obsolete Form 24 fields`);
+    }
+
+    const existingForm24FieldNames = new Set(
+      existingForm24Fields.map((field) => field.field_name),
+    );
+
+    const missingForm24Fields = form24Fields.filter(
+      (field) => !existingForm24FieldNames.has(field.field_name),
+    );
+
+    if (missingForm24Fields.length > 0) {
+      await this.fieldRepository.save(
+        missingForm24Fields.map((field) => ({
+          form: form24 as Form,
+          ...field,
+        })),
+      );
+      console.log(`✓ Added ${missingForm24Fields.length} missing Form 24 fields`);
+    }
+
     console.log('Seed check complete.');
   }
 }

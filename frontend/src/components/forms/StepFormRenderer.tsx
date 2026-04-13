@@ -150,6 +150,116 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
 
       return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
     }
+
+    if (formCode === '19C') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Licence Type',
+          description: 'Select the applicable licence type',
+          fields: allFields.filter((f) => f.order_index === 1),
+        },
+        {
+          stepNumber: 2,
+          title: 'Applicant Details',
+          description: 'Enter applicant details and contact information',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 2 && f.order_index <= 5),
+        },
+        {
+          stepNumber: 3,
+          title: 'Pharmacy Premises',
+          description: 'Provide pharmacy and premises address details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 6 && f.order_index <= 8),
+        },
+        {
+          stepNumber: 4,
+          title: 'Qualified Person Details',
+          description: 'Required only if licence type is Retail',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 9 && f.order_index <= 11),
+        },
+        {
+          stepNumber: 5,
+          title: 'Schedule X Drug Details',
+          description: 'Enter details of Schedule X drugs proposed for sale',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 12 && f.order_index <= 14),
+        },
+        {
+          stepNumber: 6,
+          title: 'Storage Details',
+          description: 'Provide special storage details if required',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 15 && f.order_index <= 17),
+        },
+        {
+          stepNumber: 7,
+          title: 'Document Uploads',
+          description: 'Upload all mandatory supporting documents',
+          fields: [],
+        },
+        {
+          stepNumber: 8,
+          title: 'Declaration & Submit',
+          description: 'Confirm details and declaration before submission',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 18 && f.order_index <= 20),
+        },
+        {
+          stepNumber: 9,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 7 || step.stepNumber === 9);
+    }
+
+    if (formCode === '24') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Applicant Details',
+          description: 'Enter applicant name, address and contact details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 4),
+        },
+        {
+          stepNumber: 2,
+          title: 'Manufacturing Premises',
+          description: 'Provide manufacturing premises address, area and layout details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 5 && f.order_index <= 8),
+        },
+        {
+          stepNumber: 3,
+          title: 'Drug Details',
+          description: 'Enter drug details and categories as per Schedule M',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 9 && f.order_index <= 12),
+        },
+        {
+          stepNumber: 4,
+          title: 'Technical Staff Details',
+          description: 'Provide technical staff name, qualification and experience details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 13 && f.order_index <= 16),
+        },
+        {
+          stepNumber: 5,
+          title: 'Document Uploads',
+          description: 'Upload premises plan and all supporting documents',
+          fields: [],
+        },
+        {
+          stepNumber: 6,
+          title: 'Declaration & Submit',
+          description: 'Confirm details and declaration before submission',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 17 && f.order_index <= 19),
+        },
+        {
+          stepNumber: 7,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
+    }
     
     // Define step ranges
     const steps: FormStep[] = [
