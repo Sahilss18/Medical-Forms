@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Eye, Plus, Calendar, Edit, Trash2 } from 'lucide-react';
+import { Search, Filter, Eye, Plus, Calendar, Edit, Trash2, Undo2 } from 'lucide-react';
 import { ApplicationListItem } from '@/types';
 import { applicationService } from '@/services/applicationService';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
@@ -90,6 +90,31 @@ const ApplicationsList: React.FC = () => {
     navigate(`/applicant/application/new/${formCode}?draft=${applicationId}`);
   };
 
+  const withdrawableStatuses = new Set([
+    'submitted',
+    'under_scrutiny',
+    'clarification_requested',
+    'inspection_assigned',
+    'inspection_completed',
+    'decision_pending',
+  ]);
+
+  const handleWithdraw = async (applicationId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+
+    if (!window.confirm('Are you sure you want to withdraw this submitted application?')) {
+      return;
+    }
+
+    try {
+      await applicationService.withdrawApplication(applicationId);
+      toast.success('Application withdrawn successfully');
+      fetchApplications();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to withdraw application');
+    }
+  };
+
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'draft', label: 'Draft' },
@@ -98,6 +123,8 @@ const ApplicationsList: React.FC = () => {
     { value: 'clarification_requested', label: 'Clarification Requested' },
     { value: 'inspection_assigned', label: 'Inspection Assigned' },
     { value: 'inspection_completed', label: 'Inspection Completed' },
+    { value: 'decision_pending', label: 'Decision Pending' },
+    { value: 'withdrawn', label: 'Withdrawn' },
     { value: 'approved', label: 'Approved' },
     { value: 'rejected', label: 'Rejected' },
   ];
@@ -157,6 +184,17 @@ const ApplicationsList: React.FC = () => {
             <Eye className="h-4 w-4 mr-1" />
             View
           </Button>
+          {withdrawableStatuses.has(app.status) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => handleWithdraw(app.id, e)}
+              className="text-orange-600 hover:text-orange-700 hover:border-orange-600"
+            >
+              <Undo2 className="h-4 w-4 mr-1" />
+              Withdraw
+            </Button>
+          )}
           {app.status === 'draft' && (
             <>
               <Button

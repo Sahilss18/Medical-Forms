@@ -37,6 +37,7 @@ export type ApplicationStatus =
   | 'inspection_assigned'
   | 'inspection_completed'
   | 'decision_pending'
+  | 'withdrawn'
   | 'approved'
   | 'rejected';
 

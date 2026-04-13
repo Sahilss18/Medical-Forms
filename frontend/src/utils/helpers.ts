@@ -50,6 +50,7 @@ export function getStatusColor(status: string): string {
     inspection_assigned: 'bg-purple-100 text-purple-800',
     inspection_completed: 'bg-indigo-100 text-indigo-800',
     decision_pending: 'bg-amber-100 text-amber-800',
+    withdrawn: 'bg-rose-100 text-rose-800',
     approved: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800',
   };
@@ -65,6 +66,7 @@ export function getStatusLabel(status: string): string {
     inspection_assigned: 'Inspection Assigned',
     inspection_completed: 'Inspection Completed',
     decision_pending: 'Decision Pending',
+    withdrawn: 'Withdrawn',
     approved: 'Approved',
     rejected: 'Rejected',
   };

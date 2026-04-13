@@ -92,6 +92,7 @@ export class ApplicationsController {
     // If user is an officer, only show applications for their office
     if (req?.user?.role === 'OFFICER' && req?.user?.officeId) {
       query.officeId = req.user.officeId;
+      query.excludeStatuses = [ApplicationStatus.WITHDRAWN];
     }
 
     return this.applicationsService.findAll(query);
@@ -350,6 +351,20 @@ export class ApplicationsController {
     @Body() payload: Record<string, any>,
   ) {
     return this.applicationsService.saveDraft(id, payload?.formData ?? payload);
+  }
+
+  @Post(':id/withdraw')
+  @Roles(UserRole.APPLICANT)
+  @HttpCode(HttpStatus.OK)
+  async withdrawApplication(
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    return this.applicationsService.withdrawApplication(
+      id,
+      req?.user?.userId,
+      req?.user?.institutionId,
+    );
   }
 
   @Delete(':id')

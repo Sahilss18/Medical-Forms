@@ -19,6 +19,7 @@ const statusMap: Record<string, ApplicationStatus> = {
   INSPECTION_ASSIGNED: 'inspection_assigned',
   INSPECTION_COMPLETED: 'inspection_completed',
   DECISION_PENDING: 'decision_pending',
+  WITHDRAWN: 'withdrawn',
   APPROVED: 'approved',
   REJECTED: 'rejected',
   under_scrutiny: 'under_scrutiny',
@@ -26,6 +27,7 @@ const statusMap: Record<string, ApplicationStatus> = {
   inspection_assigned: 'inspection_assigned',
   inspection_completed: 'inspection_completed',
   decision_pending: 'decision_pending',
+  withdrawn: 'withdrawn',
   submitted: 'submitted',
   approved: 'approved',
   rejected: 'rejected',
@@ -131,6 +133,10 @@ export const applicationService = {
 
   async submitApplication(id: string): Promise<ApiResponse<Application>> {
     return apiClient.post(`/applications/${id}/submit`);
+  },
+
+  async withdrawApplication(id: string): Promise<ApiResponse<Application>> {
+    return apiClient.post(`/applications/${id}/withdraw`);
   },
 
   async saveDraft(id: string, data: any): Promise<ApiResponse<Application>> {

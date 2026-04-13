@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Application, ApplicationStatus } from './entities/application.entity';
@@ -65,6 +65,7 @@ export class ApplicationsService {
     if (statusStr === 'INSPECTION_ASSIGNED') return ApplicationStatus.INSPECTION_ASSIGNED;
     if (statusStr === 'INSPECTION_COMPLETED') return ApplicationStatus.INSPECTION_COMPLETED;
     if (statusStr === 'DECISION_PENDING') return ApplicationStatus.DECISION_PENDING;
+    if (statusStr === 'WITHDRAWN') return ApplicationStatus.WITHDRAWN;
     if (statusStr === 'APPROVED') return ApplicationStatus.APPROVED;
     if (statusStr === 'REJECTED') return ApplicationStatus.REJECTED;
     
@@ -250,6 +251,7 @@ export class ApplicationsService {
     status?: ApplicationStatus[];
     institutionId?: string;
     officeId?: string;
+    excludeStatuses?: ApplicationStatus[];
   }): Promise<Application[]> {
     const queryBuilder = this.applicationsRepository
       .createQueryBuilder('application')
@@ -274,6 +276,12 @@ export class ApplicationsService {
     if (query?.officeId) {
       queryBuilder.andWhere('application.office_id = :officeId', {
         officeId: query.officeId,
+      });
+    }
+
+    if (query?.excludeStatuses && query.excludeStatuses.length > 0) {
+      queryBuilder.andWhere('application.status NOT IN (:...excludedStatuses)', {
+        excludedStatuses: query.excludeStatuses,
       });
     }
 
@@ -341,6 +349,10 @@ export class ApplicationsService {
         officeId: filters.officeId,
       });
     }
+
+    queryBuilder.andWhere('application.status != :withdrawnStatus', {
+      withdrawnStatus: ApplicationStatus.WITHDRAWN,
+    });
 
     const [total, pending, approved, rejected] = await Promise.all([
       queryBuilder.getCount(),
@@ -602,6 +614,53 @@ export class ApplicationsService {
     return this.applicationsRepository.save(application);
   }
 
+  async withdrawApplication(
+    id: string,
+    performedBy?: string,
+    institutionId?: string,
+  ): Promise<Application> {
+    const application = await this.findOne(id);
+
+    if (!application) {
+      throw new NotFoundException(`Application with ID ${id} not found`);
+    }
+
+    if (institutionId && application.institution_id !== institutionId) {
+      throw new NotFoundException('Application not found');
+    }
+
+    const withdrawableStatuses: ApplicationStatus[] = [
+      ApplicationStatus.SUBMITTED,
+      ApplicationStatus.SCRUTINY,
+      ApplicationStatus.CLARIFICATION,
+      ApplicationStatus.INSPECTION_ASSIGNED,
+      ApplicationStatus.INSPECTION_COMPLETED,
+      ApplicationStatus.DECISION_PENDING,
+    ];
+
+    if (!withdrawableStatuses.includes(application.status)) {
+      throw new BadRequestException('Only submitted applications can be withdrawn');
+    }
+
+    application.status = ApplicationStatus.WITHDRAWN;
+    application.current_stage = 'Application withdrawn by applicant';
+
+    const updated = await this.applicationsRepository.save(application);
+
+    await this.auditLogRepository.save({
+      entity_type: 'application',
+      entity_id: id,
+      action: 'withdrawn',
+      performed_by: performedBy || application.institution_id,
+      changes: {
+        status: ApplicationStatus.WITHDRAWN,
+      },
+      ip_address: '127.0.0.1',
+    });
+
+    return updated;
+  }
+
   async deleteApplication(id: string): Promise<void> {
     const application = await this.findOne(id);
 
@@ -725,6 +784,7 @@ export class ApplicationsService {
       'clarification_requested': 'Clarification Requested',
       'inspection_assigned': 'Inspector Assigned',
       'inspection_completed': 'Inspection Completed',
+      'withdrawn': 'Application Withdrawn',
       'approved': 'Application Approved',
       'rejected': 'Application Rejected',
     };
@@ -739,6 +799,7 @@ export class ApplicationsService {
       'clarification_requested': 'Officer has requested additional information',
       'inspection_assigned': 'Inspector assigned for site visit',
       'inspection_completed': 'Site inspection completed',
+      'withdrawn': 'Application has been withdrawn by applicant',
       'approved': 'Application has been approved',
       'rejected': 'Application has been rejected',
     };
@@ -753,6 +814,7 @@ export class ApplicationsService {
       'clarification_requested': 'clarification_requested',
       'inspection_assigned': 'inspection_assigned',
       'inspection_completed': 'inspection_completed',
+      'withdrawn': 'withdrawn',
       'approved': 'approved',
       'rejected': 'rejected',
     };
