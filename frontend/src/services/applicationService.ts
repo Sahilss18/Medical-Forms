@@ -216,11 +216,13 @@ export const applicationService = {
           order_index: field.order_index,
           options: options,
           validation: validationRules,
+          conditional: validationRules.conditional,
         };
       });
       
       const transformedForm: DynamicForm = {
         id: backendForm.id,
+        code: backendForm.form_code,
         name: backendForm.title || backendForm.form_code,
         version: '1.0',
         sections: [

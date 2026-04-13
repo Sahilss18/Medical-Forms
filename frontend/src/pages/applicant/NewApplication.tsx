@@ -336,7 +336,7 @@ const NewApplication: React.FC = () => {
           {isLoading ? (
             <LoadingSkeleton count={5} height="h-12" className="mb-4" />
           ) : form ? (
-            formCodeToUse === '19' ? (
+            ['19', '19A'].includes(form?.code || formCodeToUse) ? (
               <StepFormRenderer
                 form={form}
                 onSubmit={handleSubmit}

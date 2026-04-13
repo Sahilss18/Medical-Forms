@@ -41,6 +41,50 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
   // Group fields into steps based on order_index ranges for Form 19
   const createSteps = (): FormStep[] => {
     const allFields = form?.sections?.flatMap((section) => section.fields) || [];
+    const formCode = form?.code?.toUpperCase();
+
+    if (formCode === '19A') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Applicant Details',
+          description: 'Enter applicant and contact information',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 4),
+        },
+        {
+          stepNumber: 2,
+          title: 'Drug Types & Area',
+          description: 'Provide drug type and area of operation details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 5 && f.order_index <= 8),
+        },
+        {
+          stepNumber: 3,
+          title: 'Premises & Storage',
+          description: 'Enter premises, vendor and storage details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 9 && f.order_index <= 12),
+        },
+        {
+          stepNumber: 4,
+          title: 'Supplier Details',
+          description: 'Provide supplier and itinerant vendor information',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 13 && f.order_index <= 16),
+        },
+        {
+          stepNumber: 5,
+          title: 'Declaration & Signature',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 17 && f.order_index <= 18),
+        },
+        {
+          stepNumber: 6,
+          title: 'Review & Payment',
+          description: 'Review your application and proceed to payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 6);
+    }
     
     // Define step ranges
     const steps: FormStep[] = [
@@ -144,10 +188,35 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
         }
       }
 
+      if (field.conditional) {
+        fieldSchema = fieldSchema.optional();
+      }
+
       schemaFields[field.name] = fieldSchema;
     });
 
-    return z.object(schemaFields);
+    const conditionalFields = fields.filter((field) => field.conditional);
+    return z.object(schemaFields).superRefine((data, ctx) => {
+      conditionalFields.forEach((field) => {
+        const conditionValue = data[field.conditional!.field];
+        if (conditionValue === field.conditional!.value) {
+          const fieldValue = data[field.name];
+          const isEmpty =
+            fieldValue === undefined ||
+            fieldValue === null ||
+            fieldValue === '' ||
+            (Array.isArray(fieldValue) && fieldValue.length === 0);
+
+          if (isEmpty) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [field.name],
+              message: `${field.label} is required`,
+            });
+          }
+        }
+      });
+    });
   };
 
   const allFields = form?.sections?.flatMap((section) => section.fields) || [];
@@ -426,26 +495,14 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
                 <div className="bg-white rounded-lg p-4 border border-blue-200">
                   <h4 className="font-medium text-gray-900 mb-2">Summary:</h4>
                   <ul className="space-y-2 text-sm text-gray-600">
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Step 1: Applicant Details - Completed
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Step 2: Premises Details - Completed
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Step 3: Drug Sale Details - Completed
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Step 4: Qualified Person Details - Completed
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Step 5: Document Uploads - Completed
-                    </li>
+                    {steps
+                      .filter((step) => step.stepNumber !== 6)
+                      .map((step) => (
+                        <li key={step.stepNumber} className="flex items-center">
+                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                          Step {step.stepNumber}: {step.title} - Completed
+                        </li>
+                      ))}
                   </ul>
                 </div>
               </div>

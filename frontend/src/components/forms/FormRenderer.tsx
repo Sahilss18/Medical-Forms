@@ -31,6 +31,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
   // Build Zod schema dynamically
   const buildSchema = (fields: FormField[]) => {
     const schemaFields: Record<string, any> = {};
+    const conditionalFields = fields.filter((field) => field.conditional);
 
     fields.forEach((field) => {
       let fieldSchema: any;
@@ -85,10 +86,34 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
         }
       }
 
+      if (field.conditional) {
+        fieldSchema = fieldSchema.optional();
+      }
+
       schemaFields[field.name] = fieldSchema;
     });
 
-    return z.object(schemaFields);
+    return z.object(schemaFields).superRefine((data, ctx) => {
+      conditionalFields.forEach((field) => {
+        const conditionValue = data[field.conditional!.field];
+        if (conditionValue === field.conditional!.value) {
+          const fieldValue = data[field.name];
+          const isEmpty =
+            fieldValue === undefined ||
+            fieldValue === null ||
+            fieldValue === '' ||
+            (Array.isArray(fieldValue) && fieldValue.length === 0);
+
+          if (isEmpty) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [field.name],
+              message: `${field.label} is required`,
+            });
+          }
+        }
+      });
+    });
   };
 
   // Get all fields, with safety check

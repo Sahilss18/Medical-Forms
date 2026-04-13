@@ -684,6 +684,218 @@ export class SeedService implements OnApplicationBootstrap {
       console.log(`✓ Added ${missingForm19Fields.length} missing Form 19 fields`);
     }
 
+    // Ensure Form 19A exists - Restricted Drug Sale License
+    let form19A = await this.formRepository.findOne({
+      where: { form_code: '19A' },
+    });
+
+    if (!form19A) {
+      form19A = await this.formRepository.save({
+        form_code: '19A',
+        title: 'Restricted Drug Sale License',
+        requires_inspection: true,
+      });
+      console.log('✓ Created Form 19A');
+    }
+
+    const form19AFields = [
+      // Step 1: Applicant Details
+      {
+        label: 'Applicant Name',
+        field_name: 'applicant_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 1,
+      },
+      {
+        label: 'Applicant Address',
+        field_name: 'applicant_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 2,
+      },
+      {
+        label: 'Contact Number',
+        field_name: 'applicant_contact',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 3,
+      },
+      {
+        label: 'Email Address',
+        field_name: 'applicant_email',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 4,
+      },
+
+      // Step 2: Drug Types & Area of Operation
+      {
+        label: 'Drug Type 1',
+        field_name: 'drug_type_primary',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 5,
+      },
+      {
+        label: 'Drug Type 2',
+        field_name: 'drug_type_secondary',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 6,
+      },
+      {
+        label: 'Area of Operation',
+        field_name: 'area_of_operation',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 7,
+      },
+      {
+        label: 'Licence Type',
+        field_name: 'licence_type',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 8,
+        validation_rules: {
+          options: ['Retail', 'Wholesale', 'Retail and Wholesale'],
+        },
+      },
+
+      // Step 3: Premises & Storage
+      {
+        label: 'Premises Address',
+        field_name: 'premises_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 9,
+      },
+      {
+        label: 'Vendor Type',
+        field_name: 'vendor_type',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 10,
+        validation_rules: {
+          options: ['Fixed', 'Itinerant'],
+        },
+      },
+      {
+        label: 'Drug Sale Information',
+        field_name: 'drug_sale_information',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 11,
+      },
+      {
+        label: 'Storage Check',
+        field_name: 'storage_check',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 12,
+        validation_rules: {
+          options: ['Yes', 'No'],
+        },
+      },
+
+      // Step 4: Storage / Supplier Details
+      {
+        label: 'Storage Details',
+        field_name: 'storage_details',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 13,
+        validation_rules: {
+          conditional: { field: 'storage_check', value: 'Yes' },
+        },
+      },
+      {
+        label: 'Itinerant Vendor',
+        field_name: 'itinerant_vendor',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 14,
+        validation_rules: {
+          options: ['Yes', 'No'],
+        },
+      },
+      {
+        label: 'Supplier Name',
+        field_name: 'supplier_name',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 15,
+        validation_rules: {
+          conditional: { field: 'itinerant_vendor', value: 'Yes' },
+        },
+      },
+      {
+        label: 'Supplier Licence Number',
+        field_name: 'supplier_licence_number',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 16,
+        validation_rules: {
+          conditional: { field: 'itinerant_vendor', value: 'Yes' },
+        },
+      },
+
+      // Step 5: Declaration & Digital Signature
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 17,
+        validation_rules: {
+          options: ['Yes, I declare that the above information is true'],
+        },
+      },
+      {
+        label: 'Digital Signature Name',
+        field_name: 'digital_signature_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 18,
+      },
+    ];
+
+    const existingForm19AFields = await this.fieldRepository.find({
+      where: { form_id: form19A.id },
+      order: { created_at: 'ASC' },
+    });
+
+    const form19AFieldsMap = new Map(
+      form19AFields.map((field) => [field.field_name, field]),
+    );
+
+    const obsoleteForm19AFields = existingForm19AFields.filter(
+      (field) => !form19AFieldsMap.has(field.field_name),
+    );
+
+    if (obsoleteForm19AFields.length > 0) {
+      await this.fieldRepository.remove(obsoleteForm19AFields);
+      console.log(`✓ Removed ${obsoleteForm19AFields.length} obsolete Form 19A fields`);
+    }
+
+    const existingForm19AFieldNames = new Set(
+      existingForm19AFields.map((field) => field.field_name),
+    );
+
+    const missingForm19AFields = form19AFields.filter(
+      (field) => !existingForm19AFieldNames.has(field.field_name),
+    );
+
+    if (missingForm19AFields.length > 0) {
+      await this.fieldRepository.save(
+        missingForm19AFields.map((field) => ({
+          form: form19A as Form,
+          ...field,
+        })),
+      );
+      console.log(`✓ Added ${missingForm19AFields.length} missing Form 19A fields`);
+    }
+
     console.log('Seed check complete.');
   }
 }

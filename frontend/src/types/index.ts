@@ -187,6 +187,7 @@ export interface FormSection {
 
 export interface DynamicForm {
   id: string;
+  code?: string;
   name: string;
   version: string;
   sections: FormSection[];
