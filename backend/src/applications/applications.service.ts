@@ -670,10 +670,21 @@ export class ApplicationsService {
 
     // Only allow deleting draft applications
     if (application.status !== ApplicationStatus.DRAFT) {
-      throw new Error('Only draft applications can be deleted');
+      throw new BadRequestException('Only draft applications can be deleted');
     }
 
-    await this.applicationsRepository.delete(id);
+    await this.applicationsRepository.manager.transaction(async (manager) => {
+      // Clean up children first to avoid FK constraint violations.
+      await manager.query('DELETE FROM inspection_reports WHERE inspection_id IN (SELECT id FROM inspection_assignments WHERE application_id = $1)', [id]);
+      await manager.query('DELETE FROM inspection_assignments WHERE application_id = $1', [id]);
+      await manager.query('DELETE FROM queries WHERE application_id = $1', [id]);
+      await manager.query('DELETE FROM decisions WHERE application_id = $1', [id]);
+      await manager.query('DELETE FROM payments WHERE application_id = $1', [id]);
+      await manager.query('DELETE FROM documents WHERE application_id = $1', [id]);
+      await manager.query('DELETE FROM application_values WHERE application_id = $1', [id]);
+      await manager.query('DELETE FROM audit_logs WHERE application_id = $1 OR (entity_type = $2 AND entity_id = $1)', [id, 'application']);
+      await manager.query('DELETE FROM applications WHERE id = $1', [id]);
+    });
   }
 
   async getAvailableInspectors() {
