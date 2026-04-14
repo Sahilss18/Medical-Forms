@@ -402,6 +402,313 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
 
       return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 2 || step.stepNumber === 4);
     }
+
+    if (formCode === '27') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Application & Applicant Details',
+          description: 'Choose application type and enter applicant details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 5),
+        },
+        {
+          stepNumber: 2,
+          title: 'Drug & Staff Details',
+          description: 'Enter drug details and expert staff qualifications',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 6 && f.order_index <= 9),
+        },
+        {
+          stepNumber: 3,
+          title: 'Inspection Readiness',
+          description: 'Provide premises and plant inspection readiness date',
+          fields: allFields.filter((f) => f.order_index === 10),
+        },
+        {
+          stepNumber: 4,
+          title: 'Document Uploads',
+          description: 'Upload premises plan and supporting certificates',
+          fields: [],
+        },
+        {
+          stepNumber: 5,
+          title: 'Declaration & Submit',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 11 && f.order_index <= 13),
+        },
+        {
+          stepNumber: 6,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to fee payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 4 || step.stepNumber === 6);
+    }
+
+    if (formCode === '27A') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Application & Applicant Details',
+          description: 'Choose application type and enter applicant/firm details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 6),
+        },
+        {
+          stepNumber: 2,
+          title: 'Manufacturing Concern & Drug Details',
+          description: 'Enter manufacturing concern details and Schedule C/C(1) drug list',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 7 && f.order_index <= 10),
+        },
+        {
+          stepNumber: 3,
+          title: 'Technical Staff Details',
+          description: 'Provide manufacturing/testing staff qualifications and experience',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 11 && f.order_index <= 13),
+        },
+        {
+          stepNumber: 4,
+          title: 'Document Uploads',
+          description: 'Upload agreement letter, consent letter, labels and carton specimens',
+          fields: [],
+        },
+        {
+          stepNumber: 5,
+          title: 'Declaration & Submit',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 14 && f.order_index <= 16),
+        },
+        {
+          stepNumber: 6,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to fee payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 4 || step.stepNumber === 6);
+    }
+
+    if (formCode === '27B') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Application & Applicant Details',
+          description: 'Choose application type and enter applicant details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 5),
+        },
+        {
+          stepNumber: 2,
+          title: 'Drug & Staff Details',
+          description: 'Enter Schedule C/C(1)/X drug details and expert staff details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 6 && f.order_index <= 9),
+        },
+        {
+          stepNumber: 3,
+          title: 'Inspection Readiness',
+          description: 'Provide premises and plant inspection readiness date',
+          fields: allFields.filter((f) => f.order_index === 10),
+        },
+        {
+          stepNumber: 4,
+          title: 'Document Uploads',
+          description: 'Upload premises plan and supporting certificates',
+          fields: [],
+        },
+        {
+          stepNumber: 5,
+          title: 'Declaration & Submit',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 11 && f.order_index <= 13),
+        },
+        {
+          stepNumber: 6,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to fee payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 4 || step.stepNumber === 6);
+    }
+
+    if (formCode === '27C') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Application & Organization Details',
+          description: 'Choose application type and enter blood bank details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 5),
+        },
+        {
+          stepNumber: 2,
+          title: 'Blood Processing Details',
+          description: 'Enter whole blood processing and blood component preparation details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 6 && f.order_index <= 7),
+        },
+        {
+          stepNumber: 3,
+          title: 'Technical Staff Details',
+          description: 'Provide medical officer, supervisor, nurse and technician details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 8 && f.order_index <= 12),
+        },
+        {
+          stepNumber: 4,
+          title: 'Inspection Readiness',
+          description: 'Provide premises and plant inspection readiness date',
+          fields: allFields.filter((f) => f.order_index === 13),
+        },
+        {
+          stepNumber: 5,
+          title: 'Document Uploads',
+          description: 'Upload premises plan, equipment and staff qualification documents',
+          fields: [],
+        },
+        {
+          stepNumber: 6,
+          title: 'Declaration & Submit',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 14 && f.order_index <= 16),
+        },
+        {
+          stepNumber: 7,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to fee payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
+    }
+
+    if (formCode === '27D') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Application & Applicant Details',
+          description: 'Choose application type and enter applicant/manufacturing details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 5),
+        },
+        {
+          stepNumber: 2,
+          title: 'Drug & Staff Details',
+          description: 'Enter LVP/Sera/Vaccines details and technical staff information',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 6 && f.order_index <= 9),
+        },
+        {
+          stepNumber: 3,
+          title: 'Inspection Readiness',
+          description: 'Provide premises and plant inspection readiness date',
+          fields: allFields.filter((f) => f.order_index === 10),
+        },
+        {
+          stepNumber: 4,
+          title: 'Document Uploads',
+          description: 'Upload premises plan, equipment list and staff certificates',
+          fields: [],
+        },
+        {
+          stepNumber: 5,
+          title: 'Declaration & Submit',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 11 && f.order_index <= 13),
+        },
+        {
+          stepNumber: 6,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to fee payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 4 || step.stepNumber === 6);
+    }
+
+    if (formCode === '27DA') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Application & Applicant Details',
+          description: 'Choose application type and enter applicant/firm details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 6),
+        },
+        {
+          stepNumber: 2,
+          title: 'Manufacturing Concern & Drug Details',
+          description: 'Provide manufacturing concern details and biological drug details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 7 && f.order_index <= 10),
+        },
+        {
+          stepNumber: 3,
+          title: 'Technical Staff Details',
+          description: 'Enter manufacturing/testing staff qualifications and experience',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 11 && f.order_index <= 13),
+        },
+        {
+          stepNumber: 4,
+          title: 'Document Uploads',
+          description: 'Upload manufacturing agreement, consent letter and labels/carton specimens',
+          fields: [],
+        },
+        {
+          stepNumber: 5,
+          title: 'Declaration & Submit',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 14 && f.order_index <= 16),
+        },
+        {
+          stepNumber: 6,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to fee payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 4 || step.stepNumber === 6);
+    }
+
+    if (formCode === '27F') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Application & Organization Details',
+          description: 'Choose application type and enter blood products unit details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 6),
+        },
+        {
+          stepNumber: 2,
+          title: 'Technical Staff Details',
+          description: 'Enter medical director, laboratory in-charge and technical staff details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 7 && f.order_index <= 11),
+        },
+        {
+          stepNumber: 3,
+          title: 'Inspection Readiness',
+          description: 'Provide premises and plant inspection readiness date',
+          fields: allFields.filter((f) => f.order_index === 12),
+        },
+        {
+          stepNumber: 4,
+          title: 'Document Uploads',
+          description: 'Upload premises plan, equipment list and technical certificates',
+          fields: [],
+        },
+        {
+          stepNumber: 5,
+          title: 'Declaration & Submit',
+          description: 'Confirm declaration and digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 13 && f.order_index <= 15),
+        },
+        {
+          stepNumber: 6,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to fee payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 4 || step.stepNumber === 6);
+    }
     
     // Define step ranges
     const steps: FormStep[] = [

@@ -2170,6 +2170,338 @@ export class SeedService implements OnApplicationBootstrap {
       console.log(`✓ Added ${missingForm24FFields.length} missing Form 24F fields`);
     }
 
+    type WorkflowField = {
+      label: string;
+      field_name: string;
+      field_type: FieldType;
+      required: boolean;
+      order_index: number;
+      validation_rules?: Record<string, any>;
+    };
+
+    const seedWorkflowForm = async (
+      formCode: string,
+      title: string,
+      fields: WorkflowField[],
+    ) => {
+      let workflowForm = await this.formRepository.findOne({
+        where: { form_code: formCode },
+      });
+
+      if (!workflowForm) {
+        workflowForm = await this.formRepository.save({
+          form_code: formCode,
+          title,
+          requires_inspection: true,
+        });
+        console.log(`✓ Created Form ${formCode}`);
+      }
+
+      const existingFields = await this.fieldRepository.find({
+        where: { form_id: workflowForm.id },
+        order: { created_at: 'ASC' },
+      });
+
+      const fieldsMap = new Map(fields.map((field) => [field.field_name, field]));
+
+      const obsoleteFields = existingFields.filter(
+        (field) => !fieldsMap.has(field.field_name),
+      );
+
+      if (obsoleteFields.length > 0) {
+        await this.fieldRepository.remove(obsoleteFields);
+        console.log(`✓ Removed ${obsoleteFields.length} obsolete Form ${formCode} fields`);
+      }
+
+      const existingFieldNames = new Set(
+        existingFields.map((field) => field.field_name),
+      );
+
+      const missingFields = fields.filter(
+        (field) => !existingFieldNames.has(field.field_name),
+      );
+
+      if (missingFields.length > 0) {
+        await this.fieldRepository.save(
+          missingFields.map((field) => ({
+            form: workflowForm as Form,
+            ...field,
+          })),
+        );
+        console.log(`✓ Added ${missingFields.length} missing Form ${formCode} fields`);
+      }
+    };
+
+    await seedWorkflowForm('27', 'Generic Manufacturing Licence Application', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      {
+        label: 'Existing Licence Number (for Renewal)',
+        field_name: 'existing_licence_number',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 2,
+        validation_rules: { conditional: { field: 'application_type', value: 'Renewal' } },
+      },
+      { label: 'Applicant Name', field_name: 'applicant_name_27', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Applicant Address', field_name: 'applicant_address_27', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Manufacturing Premises Location', field_name: 'manufacturing_premises_location_27', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Drug Details', field_name: 'drug_details_27', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Testing Staff Details', field_name: 'testing_staff_details_27', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Manufacturing Staff Details', field_name: 'manufacturing_staff_details_27', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Staff Qualifications & Experience', field_name: 'staff_qualification_experience_27', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Inspection Readiness Date', field_name: 'inspection_readiness_date_27', field_type: FieldType.DATE, required: true, order_index: 10 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_27',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 11,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_27', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_27', field_type: FieldType.DATE, required: true, order_index: 13 },
+    ]);
+
+    await seedWorkflowForm('27A', 'Loan Licence (Schedule C & C(1) Drugs)', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_27a',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      {
+        label: 'Existing Licence Number (for Renewal)',
+        field_name: 'existing_licence_number_27a',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 2,
+        validation_rules: { conditional: { field: 'application_type_27a', value: 'Renewal' } },
+      },
+      { label: 'Proprietor / Managing Director', field_name: 'proprietor_or_md_27a', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Firm Name', field_name: 'firm_name_27a', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Firm Address', field_name: 'firm_address_27a', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Principal Place of Business', field_name: 'principal_place_business_27a', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Manufacturing Unit Name', field_name: 'manufacturing_unit_name_27a', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Manufacturing Unit Address', field_name: 'manufacturing_unit_address_27a', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Manufacturing Unit Existing Licence Number', field_name: 'manufacturing_unit_licence_number_27a', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Schedule C & C(1) Drug List', field_name: 'schedule_c_c1_drug_list_27a', field_type: FieldType.TEXT, required: true, order_index: 10 },
+      { label: 'Manufacturing Staff Details', field_name: 'manufacturing_staff_details_27a', field_type: FieldType.TEXT, required: true, order_index: 11 },
+      { label: 'Testing Staff Details', field_name: 'testing_staff_details_27a', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Staff Qualifications & Experience', field_name: 'staff_qualification_experience_27a', field_type: FieldType.TEXT, required: true, order_index: 13 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_27a',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 14,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_27a', field_type: FieldType.TEXT, required: true, order_index: 15 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_27a', field_type: FieldType.DATE, required: true, order_index: 16 },
+    ]);
+
+    await seedWorkflowForm('27B', 'Application (Schedule C, C(1) & X Drugs)', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_27b',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      {
+        label: 'Existing Licence Number (for Renewal)',
+        field_name: 'existing_licence_number_27b',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 2,
+        validation_rules: { conditional: { field: 'application_type_27b', value: 'Renewal' } },
+      },
+      { label: 'Applicant Name', field_name: 'applicant_name_27b', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Applicant Address', field_name: 'applicant_address_27b', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Manufacturing Premises Location', field_name: 'manufacturing_premises_location_27b', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Schedule C, C(1) & X Drugs List', field_name: 'schedule_c_c1_x_drugs_27b', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Testing Staff Details', field_name: 'testing_staff_details_27b', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Manufacturing Staff Details', field_name: 'manufacturing_staff_details_27b', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Staff Qualifications & Experience', field_name: 'staff_qualification_experience_27b', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Inspection Readiness Date', field_name: 'inspection_readiness_date_27b', field_type: FieldType.DATE, required: true, order_index: 10 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_27b',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 11,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_27b', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_27b', field_type: FieldType.DATE, required: true, order_index: 13 },
+    ]);
+
+    await seedWorkflowForm('27C', 'Blood Bank Licence Application', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_27c',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      {
+        label: 'Existing Licence Number (for Renewal)',
+        field_name: 'existing_licence_number_27c',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 2,
+        validation_rules: { conditional: { field: 'application_type_27c', value: 'Renewal' } },
+      },
+      { label: 'Blood Bank Name', field_name: 'blood_bank_name_27c', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Firm / Hospital Name', field_name: 'firm_or_hospital_name_27c', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Organization Address', field_name: 'organization_address_27c', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Whole Blood Processing Details', field_name: 'whole_blood_processing_27c', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Blood Component Preparation Details', field_name: 'blood_component_preparation_27c', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Medical Officer Details', field_name: 'medical_officer_details_27c', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Technical Supervisor Details', field_name: 'technical_supervisor_details_27c', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Registered Nurse Details', field_name: 'registered_nurse_details_27c', field_type: FieldType.TEXT, required: true, order_index: 10 },
+      { label: 'Blood Bank Technician Details', field_name: 'blood_bank_technician_details_27c', field_type: FieldType.TEXT, required: true, order_index: 11 },
+      { label: 'Staff Qualifications & Experience', field_name: 'staff_qualification_experience_27c', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Premises & Plant Inspection Readiness Date', field_name: 'inspection_readiness_date_27c', field_type: FieldType.DATE, required: true, order_index: 13 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_27c',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 14,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_27c', field_type: FieldType.TEXT, required: true, order_index: 15 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_27c', field_type: FieldType.DATE, required: true, order_index: 16 },
+    ]);
+
+    await seedWorkflowForm('27D', 'Manufacturing Licence (LVP, Sera, Vaccines)', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_27d',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      {
+        label: 'Existing Licence Number (for Renewal)',
+        field_name: 'existing_licence_number_27d',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 2,
+        validation_rules: { conditional: { field: 'application_type_27d', value: 'Renewal' } },
+      },
+      { label: 'Applicant / Firm Name', field_name: 'firm_name_27d', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Applicant Address', field_name: 'firm_address_27d', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Manufacturing Location', field_name: 'manufacturing_location_27d', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Drug Details (LVP, Sera, Vaccines)', field_name: 'drug_details_27d', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Testing Staff Details', field_name: 'testing_staff_details_27d', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Manufacturing Staff Details', field_name: 'manufacturing_staff_details_27d', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Staff Qualifications & Experience', field_name: 'staff_qualification_experience_27d', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Premises & Plant Inspection Readiness Date', field_name: 'inspection_readiness_date_27d', field_type: FieldType.DATE, required: true, order_index: 10 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_27d',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 11,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_27d', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_27d', field_type: FieldType.DATE, required: true, order_index: 13 },
+    ]);
+
+    await seedWorkflowForm('27DA', 'Loan Licence (LVP, Sera, Vaccines, r-DNA)', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_27da',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      {
+        label: 'Existing Licence Number (for Renewal)',
+        field_name: 'existing_licence_number_27da',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 2,
+        validation_rules: { conditional: { field: 'application_type_27da', value: 'Renewal' } },
+      },
+      { label: 'Applicant Name', field_name: 'applicant_name_27da', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Firm Name', field_name: 'firm_name_27da', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Firm Address', field_name: 'firm_address_27da', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Principal Place of Business', field_name: 'principal_place_business_27da', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Manufacturing Concern Unit Name', field_name: 'manufacturing_concern_name_27da', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Manufacturing Concern Address', field_name: 'manufacturing_concern_address_27da', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Manufacturing Concern Existing Licence Number', field_name: 'manufacturing_concern_licence_number_27da', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Drug Details (LVP, Sera, Vaccines, r-DNA)', field_name: 'drug_details_27da', field_type: FieldType.TEXT, required: true, order_index: 10 },
+      { label: 'Testing Staff Details', field_name: 'testing_staff_details_27da', field_type: FieldType.TEXT, required: true, order_index: 11 },
+      { label: 'Manufacturing Staff Details', field_name: 'manufacturing_staff_details_27da', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Staff Qualifications & Experience', field_name: 'staff_qualification_experience_27da', field_type: FieldType.TEXT, required: true, order_index: 13 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_27da',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 14,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_27da', field_type: FieldType.TEXT, required: true, order_index: 15 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_27da', field_type: FieldType.DATE, required: true, order_index: 16 },
+    ]);
+
+    await seedWorkflowForm('27F', 'Blood Products Manufacturing Licence', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_27f',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      {
+        label: 'Existing Licence Number (for Renewal)',
+        field_name: 'existing_licence_number_27f',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 2,
+        validation_rules: { conditional: { field: 'application_type_27f', value: 'Renewal' } },
+      },
+      { label: 'Organization / Firm Name', field_name: 'organization_name_27f', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Blood Product Unit Name', field_name: 'blood_product_unit_name_27f', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Organization Address', field_name: 'organization_address_27f', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Blood Products Details (including cord blood)', field_name: 'blood_products_details_27f', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Medical Director Details', field_name: 'medical_director_details_27f', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Laboratory In-charge Details', field_name: 'laboratory_incharge_details_27f', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Technical Supervisor Details', field_name: 'technical_supervisor_details_27f', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Cord Blood Bank Technician Details', field_name: 'cord_blood_technicians_27f', field_type: FieldType.TEXT, required: true, order_index: 10 },
+      { label: 'Staff Qualifications & Experience', field_name: 'staff_qualification_experience_27f', field_type: FieldType.TEXT, required: true, order_index: 11 },
+      { label: 'Premises & Plant Inspection Readiness Date', field_name: 'inspection_readiness_date_27f', field_type: FieldType.DATE, required: true, order_index: 12 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_27f',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 13,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_27f', field_type: FieldType.TEXT, required: true, order_index: 14 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_27f', field_type: FieldType.DATE, required: true, order_index: 15 },
+    ]);
+
     console.log('Seed check complete.');
   }
 }
