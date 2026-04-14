@@ -206,7 +206,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       setOtp('');
       const ttlSeconds = otpResponse.expiresInSeconds || 300;
       setOtpExpiryTs(Date.now() + ttlSeconds * 1000);
-      toast.success('OTP sent to institution contact email');
+      if (otpResponse.delivered === false && otpResponse.debugOtp) {
+        toast.success(`OTP generated (email fallback): ${otpResponse.debugOtp}`);
+      } else {
+        toast.success('OTP sent to institution contact email');
+      }
       return;
     }
 

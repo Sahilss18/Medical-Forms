@@ -50,7 +50,11 @@ export class PaymentsService {
     userId: string,
     orderId: string,
     email: string,
-  ): Promise<{ expiresInSeconds: number }> {
+  ): Promise<{
+    expiresInSeconds: number;
+    delivered: boolean;
+    debugOtp?: string;
+  }> {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
@@ -85,13 +89,20 @@ export class PaymentsService {
       attempts: 0,
     });
 
-    await this.notificationsService.sendEmail(
-      normalizedEmail,
-      'Payment OTP Verification',
-      `Your OTP for payment is ${otp}. It is valid for 5 minutes.`,
-    );
+    const emailResult: { delivered: boolean; fallback: boolean } =
+      await this.notificationsService.sendEmail(
+        normalizedEmail,
+        'Payment OTP Verification',
+        `Your OTP for payment is ${otp}. It is valid for 5 minutes.`,
+      );
 
-    return { expiresInSeconds };
+    return {
+      expiresInSeconds,
+      delivered: emailResult.delivered,
+      ...(emailResult.fallback && process.env.NODE_ENV !== 'production'
+        ? { debugOtp: otp }
+        : {}),
+    };
   }
 
   async verifyPaymentOtp(
@@ -166,11 +177,46 @@ export class PaymentsService {
     amount: number,
     applicationId?: string,
   ): Promise<Payment> {
+    if (!amount || amount <= 0) {
+      throw new BadRequestException('Invalid payment amount');
+    }
+
     // Generate order ID
     const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    let razorpayOrderId = `rzp_test_${Math.random().toString(36).substr(2, 16)}`;
 
-    // In production, you would integrate with Razorpay API to create actual order
-    const razorpayOrderId = `rzp_test_${Math.random().toString(36).substr(2, 16)}`;
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (razorpayKeyId && razorpayKeySecret) {
+      const authToken = Buffer.from(
+        `${razorpayKeyId}:${razorpayKeySecret}`,
+      ).toString('base64');
+
+      const response = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount,
+          currency: 'INR',
+          receipt: orderId,
+          payment_capture: 1,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new BadRequestException('Failed to create payment order');
+      }
+
+      const orderData = (await response.json()) as { id?: string };
+      if (!orderData.id) {
+        throw new BadRequestException('Invalid payment order response');
+      }
+
+      razorpayOrderId = orderData.id;
+    }
 
     const payment = this.paymentsRepository.create({
       order_id: orderId,

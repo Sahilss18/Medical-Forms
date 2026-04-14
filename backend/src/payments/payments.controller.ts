@@ -39,7 +39,7 @@ export class PaymentsController {
     return {
       id: payment.id,
       orderId: payment.razorpay_order_id,
-      amount: payment.amount * 100, // Razorpay expects paise
+      amount: Number(payment.amount),
       currency: payment.currency,
       formCode: payment.form_code,
       status: payment.status,
@@ -113,7 +113,9 @@ export class PaymentsController {
 
     return {
       success: true,
-      message: 'OTP sent successfully',
+      message: result.delivered
+        ? 'OTP sent successfully'
+        : 'OTP generated. Email delivery fallback is active.',
       ...result,
     };
   }

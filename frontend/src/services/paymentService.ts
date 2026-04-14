@@ -65,21 +65,38 @@ export const paymentService = {
     }
   },
 
-  async sendOtp(orderId: string, email: string): Promise<{ success: boolean; message?: string; expiresInSeconds?: number }> {
+  async sendOtp(
+    orderId: string,
+    email: string,
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    expiresInSeconds?: number;
+    delivered?: boolean;
+    debugOtp?: string;
+  }> {
     try {
-      const response = await apiClient.post<{ expiresInSeconds: number }>('/payments/send-otp', {
+      const response = await apiClient.post<{
+        expiresInSeconds?: number;
+        delivered?: boolean;
+        debugOtp?: string;
+      }>('/payments/send-otp', {
         orderId,
         email,
       });
 
       const payload = (response.data || response) as {
         expiresInSeconds?: number;
+        delivered?: boolean;
+        debugOtp?: string;
       };
 
       return {
         success: response.success,
         message: response.message,
         expiresInSeconds: payload.expiresInSeconds,
+        delivered: payload.delivered,
+        debugOtp: payload.debugOtp,
       };
     } catch (error: any) {
       return {
