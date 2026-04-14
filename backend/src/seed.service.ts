@@ -2502,6 +2502,107 @@ export class SeedService implements OnApplicationBootstrap {
       { label: 'Digital Signature Date', field_name: 'digital_signature_date_27f', field_type: FieldType.DATE, required: true, order_index: 15 },
     ]);
 
+    await seedWorkflowForm('30', 'Test / Analysis Manufacturing Licence', [
+      { label: 'Applicant Name', field_name: 'applicant_name_30', field_type: FieldType.TEXT, required: true, order_index: 1 },
+      { label: 'Applicant Address', field_name: 'applicant_address_30', field_type: FieldType.TEXT, required: true, order_index: 2 },
+      { label: 'Occupation', field_name: 'occupation_30', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Testing / Analysis Location Details', field_name: 'testing_location_details_30', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Drug Names for Examination/Test/Analysis', field_name: 'drug_names_for_analysis_30', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      {
+        label: 'Undertaking Accepted',
+        field_name: 'undertaking_accepted_30',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 6,
+        validation_rules: { options: ['Yes, I accept the undertaking/declaration'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_30', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_30', field_type: FieldType.DATE, required: true, order_index: 8 },
+    ]);
+
+    await seedWorkflowForm('31', 'Cosmetics Manufacturing Licence', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_31',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      {
+        label: 'Existing Licence Number (for Renewal)',
+        field_name: 'existing_licence_number_31',
+        field_type: FieldType.TEXT,
+        required: false,
+        order_index: 2,
+        validation_rules: { conditional: { field: 'application_type_31', value: 'Renewal' } },
+      },
+      { label: 'Applicant / Firm Name', field_name: 'firm_name_31', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Applicant / Firm Address', field_name: 'firm_address_31', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Manufacturing Premises Location', field_name: 'manufacturing_premises_location_31', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Cosmetics Product Names', field_name: 'cosmetics_product_names_31', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Manufacturing Staff Details', field_name: 'manufacturing_staff_details_31', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Testing Staff Details', field_name: 'testing_staff_details_31', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Staff Qualifications & Experience', field_name: 'staff_qualification_experience_31', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Premises Inspection Readiness Date', field_name: 'inspection_readiness_date_31', field_type: FieldType.DATE, required: true, order_index: 10 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_31',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 11,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_31', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_31', field_type: FieldType.DATE, required: true, order_index: 13 },
+    ]);
+
+    await seedWorkflowForm('31A', 'Loan Licence (Cosmetics)', [
+      { label: 'Applicant Name', field_name: 'applicant_name_31a', field_type: FieldType.TEXT, required: true, order_index: 1 },
+      { label: 'Applicant Address', field_name: 'applicant_address_31a', field_type: FieldType.TEXT, required: true, order_index: 2 },
+      { label: 'Premises Details', field_name: 'premises_details_31a', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Cosmetics Details', field_name: 'cosmetics_details_31a', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Technical Staff Information', field_name: 'technical_staff_info_31a', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_31a',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 6,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_31a', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_31a', field_type: FieldType.DATE, required: true, order_index: 8 },
+    ]);
+
+    await seedWorkflowForm('36', 'Test Approval (Drug / Cosmetic Testing Lab)', [
+      { label: 'Laboratory Name', field_name: 'laboratory_name_36', field_type: FieldType.TEXT, required: true, order_index: 1 },
+      { label: 'Laboratory Address', field_name: 'laboratory_address_36', field_type: FieldType.TEXT, required: true, order_index: 2 },
+      {
+        label: 'Request Type',
+        field_name: 'request_type_36',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 3,
+        validation_rules: { options: ['Grant', 'Renewal'] },
+      },
+      { label: 'Drug/Cosmetic Categories', field_name: 'drug_cosmetic_categories_36', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Expert Staff Details', field_name: 'expert_staff_details_36', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Person In-charge Details', field_name: 'person_incharge_details_36', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      { label: 'Testing Equipment List', field_name: 'testing_equipment_list_36', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Inspection Readiness Date', field_name: 'inspection_readiness_date_36', field_type: FieldType.DATE, required: true, order_index: 8 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_36',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 9,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_36', field_type: FieldType.TEXT, required: true, order_index: 10 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_36', field_type: FieldType.DATE, required: true, order_index: 11 },
+    ]);
+
     console.log('Seed check complete.');
   }
 }

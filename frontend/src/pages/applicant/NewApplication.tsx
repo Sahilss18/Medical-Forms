@@ -417,7 +417,7 @@ const NewApplication: React.FC = () => {
           {isLoading ? (
             <LoadingSkeleton count={5} height="h-12" className="mb-4" />
           ) : form ? (
-            ['19', '19A', '19B', '19C', '24', '24A', '24B', '24C', '24F', '27', '27A', '27B', '27C', '27D', '27DA', '27F'].includes(form?.code || formCodeToUse) ? (
+            ['19', '19A', '19B', '19C', '24', '24A', '24B', '24C', '24F', '27', '27A', '27B', '27C', '27D', '27DA', '27F', '30', '31', '31A', '36'].includes(form?.code || formCodeToUse) ? (
               <StepFormRenderer
                 form={form}
                 onSubmit={handleSubmit}
