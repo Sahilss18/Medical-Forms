@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { X, CreditCard, AlertCircle, ChevronLeft, MapPin, Wallet, Landmark, Smartphone } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { X, CreditCard, AlertCircle, ChevronLeft, MapPin, Wallet, Landmark, Smartphone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { paymentService } from '@/services/paymentService';
 import { getFormByCode } from '@/constants/forms';
-import { PaymentVerification } from '@/types/payment';
+import { PaymentOrder, PaymentVerification } from '@/types/payment';
 import toast from 'react-hot-toast';
 
 interface PaymentModalProps {
@@ -30,7 +30,15 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   userDetails,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [institutionEmail, setInstitutionEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpExpiryTs, setOtpExpiryTs] = useState<number | null>(null);
+  const [currentOrder, setCurrentOrder] = useState<PaymentOrder | null>(null);
 
   const form = getFormByCode(formCode);
   const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummy_key';
@@ -40,6 +48,22 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+
+  const otpTimeLeft = useMemo(() => {
+    if (!otpExpiryTs) return 0;
+    const diff = Math.floor((otpExpiryTs - Date.now()) / 1000);
+    return diff > 0 ? diff : 0;
+  }, [otpExpiryTs]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setInstitutionEmail(userDetails?.email || '');
+    setOtp('');
+    setOtpSent(false);
+    setOtpVerified(false);
+    setOtpExpiryTs(null);
+    setCurrentOrder(null);
+  }, [isOpen, userDetails?.email]);
 
   // Load Razorpay script only if not in demo mode
   useEffect(() => {
@@ -59,7 +83,22 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     };
   }, [isDemoMode]);
 
-  const handlePayment = async () => {
+  const ensureOrder = async (): Promise<PaymentOrder | null> => {
+    if (currentOrder) {
+      return currentOrder;
+    }
+
+    const orderResponse = await paymentService.createOrder(formCode, amount, applicationId);
+    if (!orderResponse.success || !orderResponse.data) {
+      toast.error(orderResponse.message || 'Failed to create payment order');
+      return null;
+    }
+
+    setCurrentOrder(orderResponse.data);
+    return orderResponse.data;
+  };
+
+  const processPayment = async (order: PaymentOrder) => {
     if (!isScriptLoaded) {
       toast.error('Payment gateway is loading. Please try again.');
       return;
@@ -68,47 +107,33 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     setIsProcessing(true);
 
     try {
-      // Create payment order
-      const orderResponse = await paymentService.createOrder(formCode, amount, applicationId);
-
-      console.log('Order creation response:', orderResponse);
-
-      if (!orderResponse.success || !orderResponse.data) {
-        toast.error(orderResponse.message || 'Failed to create payment order');
-        setIsProcessing(false);
-        return;
-      }
-
-      const order = orderResponse.data;
-      console.log('Order details:', order);
-
-      // DEMO MODE - Simulate payment without Razorpay
       if (isDemoMode) {
-        console.log('Demo mode activated - simulating payment');
         toast.loading('Processing payment...', { duration: 2000 });
-        
-        // Simulate payment processing delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        // Create mock payment response
         const mockPaymentResponse: PaymentVerification = {
           razorpay_order_id: order.orderId,
           razorpay_payment_id: `pay_demo_${Date.now()}`,
-          razorpay_signature: 'demo_signature_' + Math.random().toString(36).substr(2, 9),
+          razorpay_signature: `demo_signature_${Math.random().toString(36).substr(2, 9)}`,
         };
 
-        console.log('Mock payment response:', mockPaymentResponse);
-        console.log('Demo payment successful - bypassing backend verification');
+        const verifyResponse = await paymentService.verifyPayment(
+          mockPaymentResponse,
+          applicationId,
+        );
 
-        // In demo mode, skip backend verification and directly call success
-        toast.success('Payment successful!');
-        onSuccess(mockPaymentResponse.razorpay_payment_id, applicationId);
-        onClose();
+        if (verifyResponse.success) {
+          toast.success('Payment successful!');
+          onSuccess(mockPaymentResponse.razorpay_payment_id, verifyResponse.applicationId);
+          onClose();
+        } else {
+          toast.error(verifyResponse.message || 'Payment verification failed');
+        }
+
         setIsProcessing(false);
         return;
       }
 
-      // PRODUCTION MODE - Use actual Razorpay
       const options = {
         key: razorpayKey,
         amount: order.amount,
@@ -125,7 +150,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           color: '#ff6a00',
         },
         handler: async (response: PaymentVerification) => {
-          // Payment successful - verify on backend
           const verifyResponse = await paymentService.verifyPayment(response, applicationId);
 
           if (verifyResponse.success) {
@@ -151,6 +175,66 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       toast.error('Failed to initiate payment');
       setIsProcessing(false);
     }
+  };
+
+  const handlePayment = async () => {
+    if (!institutionEmail.trim()) {
+      toast.error('Enter institution contact email to continue');
+      return;
+    }
+
+    const order = await ensureOrder();
+    if (!order) {
+      return;
+    }
+
+    if (!otpSent) {
+      setIsSendingOtp(true);
+      const otpResponse = await paymentService.sendOtp(
+        order.orderId,
+        institutionEmail.trim(),
+      );
+      setIsSendingOtp(false);
+
+      if (!otpResponse.success) {
+        toast.error(otpResponse.message || 'Failed to send OTP');
+        return;
+      }
+
+      setOtpSent(true);
+      setOtpVerified(false);
+      setOtp('');
+      const ttlSeconds = otpResponse.expiresInSeconds || 300;
+      setOtpExpiryTs(Date.now() + ttlSeconds * 1000);
+      toast.success('OTP sent to institution contact email');
+      return;
+    }
+
+    if (!otpVerified) {
+      if (!otp.trim()) {
+        toast.error('Enter OTP to verify');
+        return;
+      }
+
+      setIsVerifyingOtp(true);
+      const verifyOtpResponse = await paymentService.verifyOtp(
+        order.orderId,
+        institutionEmail.trim(),
+        otp.trim(),
+      );
+      setIsVerifyingOtp(false);
+
+      if (!verifyOtpResponse.success) {
+        toast.error(verifyOtpResponse.message || 'OTP verification failed');
+        return;
+      }
+
+      setOtpVerified(true);
+      toast.success('OTP verified. You can complete payment now.');
+      return;
+    }
+
+    await processPayment(order);
   };
 
   if (!isOpen) return null;
@@ -211,6 +295,40 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             </div>
 
+            <div className="rounded-2xl bg-white p-4 border border-gray-100">
+              <p className="text-sm font-medium text-gray-900 mb-3">Email OTP Verification</p>
+              <div className="space-y-3">
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    value={institutionEmail}
+                    onChange={(e) => setInstitutionEmail(e.target.value)}
+                    disabled={otpVerified || isProcessing || isSendingOtp || isVerifyingOtp}
+                    placeholder="Institution contact email"
+                    className="w-full h-11 rounded-xl border border-gray-300 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200"
+                  />
+                </div>
+
+                {otpSent && (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      disabled={otpVerified || isProcessing || isVerifyingOtp}
+                      placeholder="Enter 6-digit OTP"
+                      className="w-full h-11 rounded-xl border border-gray-300 px-3 text-sm tracking-[0.2em] focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    />
+                    <div className="text-xs text-gray-500 flex justify-between">
+                      <span>{otpVerified ? 'OTP verified successfully' : 'Enter OTP sent to your email'}</span>
+                      {!otpVerified && otpTimeLeft > 0 && <span>{`Expires in ${otpTimeLeft}s`}</span>}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="rounded-2xl bg-gradient-to-r from-[#ffb170] to-[#ff6a00] p-4 text-white shadow-md">
               <div className="flex items-center justify-between mb-6">
                 <p className="text-xs font-semibold tracking-wider">APPLICATION FEE</p>
@@ -238,7 +356,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-amber-800">
                 <p className="font-semibold mb-1">Important</p>
-                <p>Payment is mandatory before submission. Receipt and status updates are sent via email/SMS.</p>
+                <p>Payment is mandatory before submission. OTP verification is required before payment.</p>
               </div>
             </div>
 
@@ -264,17 +382,17 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             </Button>
             <Button
               onClick={handlePayment}
-              disabled={isProcessing || !isScriptLoaded}
+              disabled={isProcessing || isSendingOtp || isVerifyingOtp || !isScriptLoaded}
               className="flex-1 h-12 rounded-xl bg-[#ff6a00] hover:bg-[#eb6200] text-white"
             >
-              {isProcessing ? (
+              {isProcessing || isSendingOtp || isVerifyingOtp ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Processing...
+                  {isSendingOtp ? 'Sending OTP...' : isVerifyingOtp ? 'Verifying OTP...' : 'Processing...'}
                 </>
               ) : (
                 <>
-                  Confirm Order
+                  {!otpSent ? 'Send OTP' : !otpVerified ? 'Verify OTP' : 'Confirm Order'}
                 </>
               )}
             </Button>

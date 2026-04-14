@@ -53,6 +53,7 @@ export class PaymentsController {
    */
   @Post('verify')
   async verifyPayment(
+    @Request() req: AuthRequest,
     @Body()
     body: {
       razorpay_order_id: string;
@@ -66,6 +67,7 @@ export class PaymentsController {
       console.log('Body:', JSON.stringify(body, null, 2));
 
       const payment = await this.paymentsService.updatePaymentStatus(
+        req.user.userId,
         body.razorpay_order_id,
         body.razorpay_payment_id,
         body.razorpay_signature,
@@ -96,6 +98,42 @@ export class PaymentsController {
         message,
       };
     }
+  }
+
+  @Post('send-otp')
+  async sendOtp(
+    @Request() req: AuthRequest,
+    @Body() body: { orderId: string; email: string },
+  ) {
+    const result = await this.paymentsService.sendPaymentOtp(
+      req.user.userId,
+      body.orderId,
+      body.email,
+    );
+
+    return {
+      success: true,
+      message: 'OTP sent successfully',
+      ...result,
+    };
+  }
+
+  @Post('verify-otp')
+  async verifyOtp(
+    @Request() req: AuthRequest,
+    @Body() body: { orderId: string; email: string; otp: string },
+  ) {
+    await this.paymentsService.verifyPaymentOtp(
+      req.user.userId,
+      body.orderId,
+      body.email,
+      body.otp,
+    );
+
+    return {
+      success: true,
+      message: 'OTP verified successfully',
+    };
   }
 
   /**

@@ -37,7 +37,6 @@ export const paymentService = {
     applicationId?: string
   ): Promise<VerifyPaymentResponse> {
     try {
-      console.log('Calling verify API with:', { paymentData, applicationId });
       const response = await apiClient.post<{
         success?: boolean;
         message?: string;
@@ -46,23 +45,66 @@ export const paymentService = {
         ...paymentData,
         applicationId,
       });
-      console.log('Full response:', response);
-      console.log('Response data:', response.data);
-      
-      const data = response?.data ?? {};
-      console.log('Parsed data:', data);
-      
+
+      const payload = (response.data || response) as {
+        success?: boolean;
+        message?: string;
+        applicationId?: string;
+      };
+
       return {
-        success: response.success && data.success !== false,
-        message: data.message || response.message || 'Payment verified successfully',
-        applicationId: data.applicationId || applicationId,
+        success: response.success && payload.success !== false,
+        message: payload.message || response.message || 'Payment verified successfully',
+        applicationId: payload.applicationId || applicationId,
       };
     } catch (error: any) {
-      console.error('Verify API error:', error);
-      console.error('Error response:', error.response);
       return {
         success: false,
         message: error.response?.data?.message || error.message || 'Payment verification failed',
+      };
+    }
+  },
+
+  async sendOtp(orderId: string, email: string): Promise<{ success: boolean; message?: string; expiresInSeconds?: number }> {
+    try {
+      const response = await apiClient.post<{ expiresInSeconds: number }>('/payments/send-otp', {
+        orderId,
+        email,
+      });
+
+      const payload = (response.data || response) as {
+        expiresInSeconds?: number;
+      };
+
+      return {
+        success: response.success,
+        message: response.message,
+        expiresInSeconds: payload.expiresInSeconds,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to send OTP',
+      };
+    }
+  },
+
+  async verifyOtp(orderId: string, email: string, otp: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await apiClient.post('/payments/verify-otp', {
+        orderId,
+        email,
+        otp,
+      });
+
+      return {
+        success: response.success,
+        message: response.message,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to verify OTP',
       };
     }
   },
