@@ -2603,6 +2603,145 @@ export class SeedService implements OnApplicationBootstrap {
       { label: 'Digital Signature Date', field_name: 'digital_signature_date_36', field_type: FieldType.DATE, required: true, order_index: 11 },
     ]);
 
+    await seedWorkflowForm('20', 'General Drug Sale Licence (Retail)', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_20',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      { label: 'Applicant Name', field_name: 'applicant_name_20', field_type: FieldType.TEXT, required: true, order_index: 2 },
+      { label: 'Applicant Address', field_name: 'applicant_address_20', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Constitution of Business', field_name: 'constitution_of_business_20', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Premises Address', field_name: 'premises_address_20', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Premises Area (sq ft)', field_name: 'premises_area_20', field_type: FieldType.NUMBER, required: true, order_index: 6 },
+      { label: 'Storage Details', field_name: 'storage_details_20', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Drug Categories', field_name: 'drug_categories_20', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Qualified Pharmacist Name', field_name: 'qualified_pharmacist_name_20', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Pharmacist Registration Number', field_name: 'pharmacist_registration_number_20', field_type: FieldType.TEXT, required: true, order_index: 10 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_20',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 11,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_20', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_20', field_type: FieldType.DATE, required: true, order_index: 13 },
+    ]);
+
+    await seedWorkflowForm('21', 'General Drug Sale Licence (Wholesale)', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_21',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['New Licence', 'Renewal'] },
+      },
+      { label: 'Applicant Name', field_name: 'applicant_name_21', field_type: FieldType.TEXT, required: true, order_index: 2 },
+      { label: 'Applicant Address', field_name: 'applicant_address_21', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Constitution of Business', field_name: 'constitution_of_business_21', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Premises Address', field_name: 'premises_address_21', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Premises Area (sq ft)', field_name: 'premises_area_21', field_type: FieldType.NUMBER, required: true, order_index: 6 },
+      { label: 'Storage Details', field_name: 'storage_details_21', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Drug Categories', field_name: 'drug_categories_21', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Qualified Person Name', field_name: 'qualified_person_name_21', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Qualified Person Registration Number', field_name: 'qualified_person_registration_21', field_type: FieldType.TEXT, required: true, order_index: 10 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_21',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 11,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_21', field_type: FieldType.TEXT, required: true, order_index: 12 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_21', field_type: FieldType.DATE, required: true, order_index: 13 },
+    ]);
+
+    await seedWorkflowForm('BSC', 'Blood Storage Centre Grant / Renewal', [
+      {
+        label: 'Application Type',
+        field_name: 'application_type_bsc',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 1,
+        validation_rules: { options: ['Grant', 'Renewal'] },
+      },
+      { label: 'Hospital Name', field_name: 'hospital_name_bsc', field_type: FieldType.TEXT, required: true, order_index: 2 },
+      { label: 'Hospital Address', field_name: 'hospital_address_bsc', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Staff Qualification Details', field_name: 'staff_qualification_details_bsc', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Storage Facilities Information', field_name: 'storage_facilities_info_bsc', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Equipment Details', field_name: 'equipment_details_bsc', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_bsc',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 7,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_bsc', field_type: FieldType.TEXT, required: true, order_index: 8 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_bsc', field_type: FieldType.DATE, required: true, order_index: 9 },
+    ]);
+
+    await seedWorkflowForm('14A', 'Test / Analysis Request (Government Lab)', [
+      { label: 'Applicant Name', field_name: 'applicant_name_14a', field_type: FieldType.TEXT, required: true, order_index: 1 },
+      { label: 'Applicant Address', field_name: 'applicant_address_14a', field_type: FieldType.TEXT, required: true, order_index: 2 },
+      { label: 'Drug Details', field_name: 'drug_details_14a', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Purchase Details', field_name: 'purchase_details_14a', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Reason for Test', field_name: 'reason_for_test_14a', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_14a',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 6,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_14a', field_type: FieldType.TEXT, required: true, order_index: 7 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_14a', field_type: FieldType.DATE, required: true, order_index: 8 },
+    ]);
+
+    await seedWorkflowForm('44', 'New Drug / Clinical Trial / Import / Manufacture', [
+      { label: 'Drug Name', field_name: 'drug_name_44', field_type: FieldType.TEXT, required: true, order_index: 1 },
+      { label: 'Dosage Form', field_name: 'dosage_form_44', field_type: FieldType.TEXT, required: true, order_index: 2 },
+      { label: 'Pharmacological Classification', field_name: 'pharmacological_classification_44', field_type: FieldType.TEXT, required: true, order_index: 3 },
+      { label: 'Indications', field_name: 'indications_44', field_type: FieldType.TEXT, required: true, order_index: 4 },
+      { label: 'Raw Materials', field_name: 'raw_materials_44', field_type: FieldType.TEXT, required: true, order_index: 5 },
+      { label: 'Patent Status', field_name: 'patent_status_44', field_type: FieldType.TEXT, required: true, order_index: 6 },
+      {
+        label: 'Application Type',
+        field_name: 'application_type_44',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 7,
+        validation_rules: {
+          options: [
+            'New Drug Market',
+            'Clinical Trial',
+            'Manufacture Approved Drug',
+            'Fixed Dose Combination',
+            'New Indication/Dosage',
+          ],
+        },
+      },
+      {
+        label: 'Declaration Accepted',
+        field_name: 'declaration_accepted_44',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 8,
+        validation_rules: { options: ['Yes, I declare the information is true and complete'] },
+      },
+      { label: 'Digital Signature Name', field_name: 'digital_signature_name_44', field_type: FieldType.TEXT, required: true, order_index: 9 },
+      { label: 'Digital Signature Date', field_name: 'digital_signature_date_44', field_type: FieldType.DATE, required: true, order_index: 10 },
+    ]);
+
     console.log('Seed check complete.');
   }
 }

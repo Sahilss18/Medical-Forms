@@ -40,7 +40,7 @@ const NewApplication: React.FC = () => {
   const [documentFiles, setDocumentFiles] = useState<Record<string, File[]>>({});
 
   const formCodeToUse = formCode || '3F';
-  const noPaymentFormCodes = ['24B', '24C'];
+  const noPaymentFormCodes = ['24B', '24C', '3F', 'BSC'];
   const requiresPayment = !noPaymentFormCodes.includes(formCodeToUse.toUpperCase());
   const formMetadata = getFormByCode(formCodeToUse);
   const documentRequirements = formMetadata?.documentRequirements || [];
@@ -417,7 +417,7 @@ const NewApplication: React.FC = () => {
           {isLoading ? (
             <LoadingSkeleton count={5} height="h-12" className="mb-4" />
           ) : form ? (
-            ['19', '19A', '19B', '19C', '24', '24A', '24B', '24C', '24F', '27', '27A', '27B', '27C', '27D', '27DA', '27F', '30', '31', '31A', '36'].includes(form?.code || formCodeToUse) ? (
+            ['19', '19A', '19B', '19C', '20', '21', '24', '24A', '24B', '24C', '24F', '27', '27A', '27B', '27C', '27D', '27DA', '27F', '30', '31', '31A', '36', '3F', 'BSC', '14A', '44'].includes(form?.code || formCodeToUse) ? (
               <StepFormRenderer
                 form={form}
                 onSubmit={handleSubmit}
