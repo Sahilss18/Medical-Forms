@@ -1512,6 +1512,197 @@ export class SeedService implements OnApplicationBootstrap {
       console.log(`✓ Added ${missingForm24Fields.length} missing Form 24 fields`);
     }
 
+    // Ensure Form 24A exists - Loan Manufacturing Licence
+    let form24A = await this.formRepository.findOne({
+      where: { form_code: '24A' },
+    });
+
+    if (!form24A) {
+      form24A = await this.formRepository.save({
+        form_code: '24A',
+        title: 'Loan Manufacturing Licence',
+        requires_inspection: true,
+      });
+      console.log('✓ Created Form 24A');
+    }
+
+    const form24AFields = [
+      // Step 1: Loan Licensee Information
+      {
+        label: 'Loan Licensee Name',
+        field_name: 'loan_licensee_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 1,
+      },
+      {
+        label: 'Loan Licensee Address',
+        field_name: 'loan_licensee_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 2,
+      },
+      {
+        label: 'Loan Licensee Contact Number',
+        field_name: 'loan_licensee_contact',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 3,
+      },
+      {
+        label: 'Loan Licensee Email',
+        field_name: 'loan_licensee_email',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 4,
+      },
+
+      // Step 2: Manufacturing Concern Details (Principal/Licensor)
+      {
+        label: 'Manufacturing Concern Unit Name',
+        field_name: 'manufacturing_concern_unit_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 5,
+      },
+      {
+        label: 'Manufacturing Concern Address',
+        field_name: 'manufacturing_concern_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 6,
+      },
+      {
+        label: 'Manufacturing Concern Existing Licence Number',
+        field_name: 'manufacturing_concern_licence_number',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 7,
+      },
+
+      // Step 3: Drugs to be Manufactured
+      {
+        label: 'Drug Names to be Manufactured',
+        field_name: 'drug_names_loan_manufacturing',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 8,
+      },
+      {
+        label: 'Drug Categories',
+        field_name: 'drug_categories_loan',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 9,
+      },
+      {
+        label: 'Dosage Forms',
+        field_name: 'dosage_forms_loan',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 10,
+      },
+      {
+        label: 'Manufacturing Capacity',
+        field_name: 'manufacturing_capacity_loan',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 11,
+      },
+
+      // Step 4: Expert Staff Qualifications
+      {
+        label: 'Expert Staff Member Name',
+        field_name: 'expert_staff_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 12,
+      },
+      {
+        label: 'Expert Staff Qualification',
+        field_name: 'expert_staff_qualification',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 13,
+      },
+      {
+        label: 'Expert Staff Experience (Years)',
+        field_name: 'expert_staff_experience',
+        field_type: FieldType.NUMBER,
+        required: true,
+        order_index: 14,
+      },
+      {
+        label: 'Expert Staff Registration Number',
+        field_name: 'expert_staff_registration',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 15,
+      },
+
+      // Step 6: Declaration & Confirmation
+      {
+        label: 'Declaration Accepted',
+        field_name: 'loan_declaration_accepted',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 16,
+        validation_rules: {
+          options: ['Yes, I confirm all details are accurate and legally binding'],
+        },
+      },
+      {
+        label: 'Digital Signature Name',
+        field_name: 'loan_digital_signature_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 17,
+      },
+      {
+        label: 'Digital Signature Date',
+        field_name: 'loan_digital_signature_date',
+        field_type: FieldType.DATE,
+        required: true,
+        order_index: 18,
+      },
+    ];
+
+    const existingForm24AFields = await this.fieldRepository.find({
+      where: { form_id: form24A.id },
+      order: { created_at: 'ASC' },
+    });
+
+    const form24AFieldsMap = new Map(
+      form24AFields.map((field) => [field.field_name, field]),
+    );
+
+    const obsoleteForm24AFields = existingForm24AFields.filter(
+      (field) => !form24AFieldsMap.has(field.field_name),
+    );
+
+    if (obsoleteForm24AFields.length > 0) {
+      await this.fieldRepository.remove(obsoleteForm24AFields);
+      console.log(`✓ Removed ${obsoleteForm24AFields.length} obsolete Form 24A fields`);
+    }
+
+    const existingForm24AFieldNames = new Set(
+      existingForm24AFields.map((field) => field.field_name),
+    );
+
+    const missingForm24AFields = form24AFields.filter(
+      (field) => !existingForm24AFieldNames.has(field.field_name),
+    );
+
+    if (missingForm24AFields.length > 0) {
+      await this.fieldRepository.save(
+        missingForm24AFields.map((field) => ({
+          form: form24A as Form,
+          ...field,
+        })),
+      );
+      console.log(`✓ Added ${missingForm24AFields.length} missing Form 24A fields`);
+    }
+
     console.log('Seed check complete.');
   }
 }

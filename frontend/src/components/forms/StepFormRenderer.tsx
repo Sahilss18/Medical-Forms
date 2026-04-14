@@ -260,6 +260,55 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
 
       return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
     }
+
+    if (formCode === '24A') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Loan Licensee Information',
+          description: 'Enter loan licensee name, address and contact details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 4),
+        },
+        {
+          stepNumber: 2,
+          title: 'Manufacturing Concern Details',
+          description: 'Provide the manufacturing concern unit name, address and existing licence number',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 5 && f.order_index <= 7),
+        },
+        {
+          stepNumber: 3,
+          title: 'Drugs to be Manufactured',
+          description: 'Enter details of drugs, categories, dosage forms and manufacturing capacity',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 8 && f.order_index <= 11),
+        },
+        {
+          stepNumber: 4,
+          title: 'Expert Staff Qualifications',
+          description: 'Provide expert staff name, qualification, experience and registration details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 12 && f.order_index <= 15),
+        },
+        {
+          stepNumber: 5,
+          title: 'Document Uploads',
+          description: 'Upload manufacturing concern licence, agreement letter, consent letter, GMP certificate, labels and expert staff qualifications',
+          fields: [],
+        },
+        {
+          stepNumber: 6,
+          title: 'Declaration & Confirmation',
+          description: 'Confirm declaration and provide digital signature',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 16 && f.order_index <= 18),
+        },
+        {
+          stepNumber: 7,
+          title: 'Review & Payment',
+          description: 'Review the loan manufacturing licence application and proceed to payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
+    }
     
     // Define step ranges
     const steps: FormStep[] = [
