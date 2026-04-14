@@ -886,8 +886,8 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
         },
         {
           stepNumber: 4,
-          title: 'Review & Submit',
-          description: 'Review details and submit for departmental scrutiny',
+          title: 'Review & Payment',
+          description: 'Review details and proceed to payment',
           fields: [],
         },
       ];

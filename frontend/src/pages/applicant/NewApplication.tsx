@@ -40,7 +40,7 @@ const NewApplication: React.FC = () => {
   const [documentFiles, setDocumentFiles] = useState<Record<string, File[]>>({});
 
   const formCodeToUse = formCode || '3F';
-  const noPaymentFormCodes = ['24B', '24C', '3F', 'BSC'];
+  const noPaymentFormCodes = ['24B', '24C', 'BSC'];
   const requiresPayment = !noPaymentFormCodes.includes(formCodeToUse.toUpperCase());
   const formMetadata = getFormByCode(formCodeToUse);
   const documentRequirements = formMetadata?.documentRequirements || [];
