@@ -1703,6 +1703,473 @@ export class SeedService implements OnApplicationBootstrap {
       console.log(`✓ Added ${missingForm24AFields.length} missing Form 24A fields`);
     }
 
+    // Ensure Form 24B exists - Drug Repacking Licence
+    let form24B = await this.formRepository.findOne({
+      where: { form_code: '24B' },
+    });
+
+    if (!form24B) {
+      form24B = await this.formRepository.save({
+        form_code: '24B',
+        title: 'Drug Repacking Licence',
+        requires_inspection: true,
+      });
+      console.log('✓ Created Form 24B');
+    }
+
+    const form24BFields = [
+      // Step 1: Drug + Premises Details
+      {
+        label: 'Applicant / Firm Name',
+        field_name: 'repacking_firm_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 1,
+      },
+      {
+        label: 'Applicant / Firm Address',
+        field_name: 'repacking_firm_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 2,
+      },
+      {
+        label: 'Contact Number',
+        field_name: 'repacking_contact_number',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 3,
+      },
+      {
+        label: 'Email Address',
+        field_name: 'repacking_email',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 4,
+      },
+      {
+        label: 'Premises Address',
+        field_name: 'repacking_premises_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 5,
+      },
+      {
+        label: 'Premises Area (sq ft)',
+        field_name: 'repacking_premises_area',
+        field_type: FieldType.NUMBER,
+        required: true,
+        order_index: 6,
+      },
+      {
+        label: 'Drug Names for Repacking',
+        field_name: 'repacking_drug_names',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 7,
+      },
+      {
+        label: 'Drug Categories',
+        field_name: 'repacking_drug_categories',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 8,
+      },
+      {
+        label: 'Source Manufacturer Name',
+        field_name: 'source_manufacturer_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 9,
+      },
+      {
+        label: 'Source Authorization Reference',
+        field_name: 'source_authorization_reference',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 10,
+      },
+
+      // Step 3: Declaration & Submit
+      {
+        label: 'Declaration Accepted',
+        field_name: 'repacking_declaration_accepted',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 11,
+        validation_rules: {
+          options: ['Yes, I confirm all details are accurate'],
+        },
+      },
+      {
+        label: 'Digital Signature Name',
+        field_name: 'repacking_digital_signature_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 12,
+      },
+      {
+        label: 'Digital Signature Date',
+        field_name: 'repacking_digital_signature_date',
+        field_type: FieldType.DATE,
+        required: true,
+        order_index: 13,
+      },
+    ];
+
+    const existingForm24BFields = await this.fieldRepository.find({
+      where: { form_id: form24B.id },
+      order: { created_at: 'ASC' },
+    });
+
+    const form24BFieldsMap = new Map(
+      form24BFields.map((field) => [field.field_name, field]),
+    );
+
+    const obsoleteForm24BFields = existingForm24BFields.filter(
+      (field) => !form24BFieldsMap.has(field.field_name),
+    );
+
+    if (obsoleteForm24BFields.length > 0) {
+      await this.fieldRepository.remove(obsoleteForm24BFields);
+      console.log(`✓ Removed ${obsoleteForm24BFields.length} obsolete Form 24B fields`);
+    }
+
+    const existingForm24BFieldNames = new Set(
+      existingForm24BFields.map((field) => field.field_name),
+    );
+
+    const missingForm24BFields = form24BFields.filter(
+      (field) => !existingForm24BFieldNames.has(field.field_name),
+    );
+
+    if (missingForm24BFields.length > 0) {
+      await this.fieldRepository.save(
+        missingForm24BFields.map((field) => ({
+          form: form24B as Form,
+          ...field,
+        })),
+      );
+      console.log(`✓ Added ${missingForm24BFields.length} missing Form 24B fields`);
+    }
+
+    // Ensure Form 24C exists - Homoeopathic Manufacturing Licence
+    let form24C = await this.formRepository.findOne({
+      where: { form_code: '24C' },
+    });
+
+    if (!form24C) {
+      form24C = await this.formRepository.save({
+        form_code: '24C',
+        title: 'Homoeopathic Manufacturing Licence',
+        requires_inspection: true,
+      });
+      console.log('✓ Created Form 24C');
+    }
+
+    const form24CFields = [
+      // Step 1: Product + Staff Details
+      {
+        label: 'Applicant / Firm Name',
+        field_name: 'homoeopathy_firm_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 1,
+      },
+      {
+        label: 'Applicant / Firm Address',
+        field_name: 'homoeopathy_firm_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 2,
+      },
+      {
+        label: 'Product Names',
+        field_name: 'homoeopathy_product_names',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 3,
+      },
+      {
+        label: 'Product Categories',
+        field_name: 'homoeopathy_product_categories',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 4,
+      },
+      {
+        label: 'Mother Tincture Source Details',
+        field_name: 'homoeopathy_source_details',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 5,
+      },
+      {
+        label: 'Manufacturing Premises Address',
+        field_name: 'homoeopathy_premises_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 6,
+      },
+      {
+        label: 'Expert Staff Name',
+        field_name: 'homoeopathy_staff_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 7,
+      },
+      {
+        label: 'Expert Staff Qualification',
+        field_name: 'homoeopathy_staff_qualification',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 8,
+      },
+      {
+        label: 'Expert Staff Experience (Years)',
+        field_name: 'homoeopathy_staff_experience',
+        field_type: FieldType.NUMBER,
+        required: true,
+        order_index: 9,
+      },
+      {
+        label: 'Supervising Qualification Reference',
+        field_name: 'homoeopathy_supervising_reference',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 10,
+      },
+
+      // Step 3: Declaration & Submit
+      {
+        label: 'Declaration Accepted',
+        field_name: 'homoeopathy_declaration_accepted',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 11,
+        validation_rules: {
+          options: ['Yes, I confirm all details are accurate'],
+        },
+      },
+      {
+        label: 'Digital Signature Name',
+        field_name: 'homoeopathy_digital_signature_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 12,
+      },
+      {
+        label: 'Digital Signature Date',
+        field_name: 'homoeopathy_digital_signature_date',
+        field_type: FieldType.DATE,
+        required: true,
+        order_index: 13,
+      },
+    ];
+
+    const existingForm24CFields = await this.fieldRepository.find({
+      where: { form_id: form24C.id },
+      order: { created_at: 'ASC' },
+    });
+
+    const form24CFieldsMap = new Map(
+      form24CFields.map((field) => [field.field_name, field]),
+    );
+
+    const obsoleteForm24CFields = existingForm24CFields.filter(
+      (field) => !form24CFieldsMap.has(field.field_name),
+    );
+
+    if (obsoleteForm24CFields.length > 0) {
+      await this.fieldRepository.remove(obsoleteForm24CFields);
+      console.log(`✓ Removed ${obsoleteForm24CFields.length} obsolete Form 24C fields`);
+    }
+
+    const existingForm24CFieldNames = new Set(
+      existingForm24CFields.map((field) => field.field_name),
+    );
+
+    const missingForm24CFields = form24CFields.filter(
+      (field) => !existingForm24CFieldNames.has(field.field_name),
+    );
+
+    if (missingForm24CFields.length > 0) {
+      await this.fieldRepository.save(
+        missingForm24CFields.map((field) => ({
+          form: form24C as Form,
+          ...field,
+        })),
+      );
+      console.log(`✓ Added ${missingForm24CFields.length} missing Form 24C fields`);
+    }
+
+    // Ensure Form 24F exists - Schedule X Manufacturing Licence
+    let form24F = await this.formRepository.findOne({
+      where: { form_code: '24F' },
+    });
+
+    if (!form24F) {
+      form24F = await this.formRepository.save({
+        form_code: '24F',
+        title: 'Schedule X Manufacturing Licence',
+        requires_inspection: true,
+      });
+      console.log('✓ Created Form 24F');
+    }
+
+    const form24FFields = [
+      // Step 1: Drug + Premises Details
+      {
+        label: 'Applicant / Firm Name',
+        field_name: 'schedulex_firm_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 1,
+      },
+      {
+        label: 'Applicant / Firm Address',
+        field_name: 'schedulex_firm_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 2,
+      },
+      {
+        label: 'Contact Number',
+        field_name: 'schedulex_contact_number',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 3,
+      },
+      {
+        label: 'Email Address',
+        field_name: 'schedulex_email',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 4,
+      },
+      {
+        label: 'Manufacturing Premises Address',
+        field_name: 'schedulex_premises_address',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 5,
+      },
+      {
+        label: 'Premises Area (sq ft)',
+        field_name: 'schedulex_premises_area',
+        field_type: FieldType.NUMBER,
+        required: true,
+        order_index: 6,
+      },
+      {
+        label: 'Schedule X Drug Names',
+        field_name: 'schedulex_drug_names',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 7,
+      },
+      {
+        label: 'Schedule X Drug Categories',
+        field_name: 'schedulex_drug_categories',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 8,
+      },
+      {
+        label: 'Manufacturing Capacity',
+        field_name: 'schedulex_manufacturing_capacity',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 9,
+      },
+      {
+        label: 'Special Storage Available',
+        field_name: 'schedulex_special_storage_available',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 10,
+        validation_rules: {
+          options: ['Yes', 'No'],
+        },
+      },
+      {
+        label: 'Security Measures Details',
+        field_name: 'schedulex_security_measures',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 11,
+      },
+      {
+        label: 'Qualified Supervisory Staff Details',
+        field_name: 'schedulex_supervisory_staff',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 12,
+      },
+
+      // Step 3: Declaration & Submit
+      {
+        label: 'Declaration Accepted',
+        field_name: 'schedulex_declaration_accepted',
+        field_type: FieldType.SELECT,
+        required: true,
+        order_index: 13,
+        validation_rules: {
+          options: ['Yes, I confirm all details are accurate'],
+        },
+      },
+      {
+        label: 'Digital Signature Name',
+        field_name: 'schedulex_digital_signature_name',
+        field_type: FieldType.TEXT,
+        required: true,
+        order_index: 14,
+      },
+      {
+        label: 'Digital Signature Date',
+        field_name: 'schedulex_digital_signature_date',
+        field_type: FieldType.DATE,
+        required: true,
+        order_index: 15,
+      },
+    ];
+
+    const existingForm24FFields = await this.fieldRepository.find({
+      where: { form_id: form24F.id },
+      order: { created_at: 'ASC' },
+    });
+
+    const form24FFieldsMap = new Map(
+      form24FFields.map((field) => [field.field_name, field]),
+    );
+
+    const obsoleteForm24FFields = existingForm24FFields.filter(
+      (field) => !form24FFieldsMap.has(field.field_name),
+    );
+
+    if (obsoleteForm24FFields.length > 0) {
+      await this.fieldRepository.remove(obsoleteForm24FFields);
+      console.log(`✓ Removed ${obsoleteForm24FFields.length} obsolete Form 24F fields`);
+    }
+
+    const existingForm24FFieldNames = new Set(
+      existingForm24FFields.map((field) => field.field_name),
+    );
+
+    const missingForm24FFields = form24FFields.filter(
+      (field) => !existingForm24FFieldNames.has(field.field_name),
+    );
+
+    if (missingForm24FFields.length > 0) {
+      await this.fieldRepository.save(
+        missingForm24FFields.map((field) => ({
+          form: form24F as Form,
+          ...field,
+        })),
+      );
+      console.log(`✓ Added ${missingForm24FFields.length} missing Form 24F fields`);
+    }
+
     console.log('Seed check complete.');
   }
 }

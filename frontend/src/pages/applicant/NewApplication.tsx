@@ -40,6 +40,8 @@ const NewApplication: React.FC = () => {
   const [documentFiles, setDocumentFiles] = useState<Record<string, File[]>>({});
 
   const formCodeToUse = formCode || '3F';
+  const noPaymentFormCodes = ['24B', '24C'];
+  const requiresPayment = !noPaymentFormCodes.includes(formCodeToUse.toUpperCase());
   const formMetadata = getFormByCode(formCodeToUse);
   const documentRequirements = formMetadata?.documentRequirements || [];
   const getAllowedMimeTypes = (document: DocumentRequirement): string[] => {
@@ -211,9 +213,19 @@ const NewApplication: React.FC = () => {
       
       // Store the draft ID
       setDraftApplicationId(applicationId);
-      
-      // Show payment modal after documents are uploaded
-      setShowPaymentModal(true);
+
+      if (requiresPayment) {
+        // Show payment modal after documents are uploaded
+        setShowPaymentModal(true);
+      } else {
+        const submitResponse = await applicationService.submitApplication(applicationId);
+        if (submitResponse.success) {
+          toast.success('Application submitted successfully.');
+          navigate('/applicant/applications');
+        } else {
+          toast.error('Failed to submit application. Please try again.');
+        }
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to process application');
     } finally {
@@ -405,13 +417,13 @@ const NewApplication: React.FC = () => {
           {isLoading ? (
             <LoadingSkeleton count={5} height="h-12" className="mb-4" />
           ) : form ? (
-            ['19', '19A', '19B', '19C', '24', '24A'].includes(form?.code || formCodeToUse) ? (
+            ['19', '19A', '19B', '19C', '24', '24A', '24B', '24C', '24F'].includes(form?.code || formCodeToUse) ? (
               <StepFormRenderer
                 form={form}
                 onSubmit={handleSubmit}
                 onSaveDraft={handleSaveDraft}
                 isLoading={isSubmitting}
-                submitButtonText="Proceed to Payment"
+                submitButtonText={requiresPayment ? 'Proceed to Payment' : 'Submit Application'}
                 showDraftButton
                 documentRequirements={documentRequirements}
                 documentFiles={documentFiles}

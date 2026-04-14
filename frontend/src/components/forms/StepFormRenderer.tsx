@@ -309,6 +309,99 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
 
       return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 5 || step.stepNumber === 7);
     }
+
+    if (formCode === '24B') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Drug & Premises Details',
+          description: 'Enter repacking drug details and premises information',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 10),
+        },
+        {
+          stepNumber: 2,
+          title: 'Document Uploads',
+          description: 'Upload repacking facility and supporting documents',
+          fields: [],
+        },
+        {
+          stepNumber: 3,
+          title: 'Declaration & Submit',
+          description: 'Confirm details and declaration before submission',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 11 && f.order_index <= 13),
+        },
+        {
+          stepNumber: 4,
+          title: 'Review & Submit',
+          description: 'Review application and submit for validation, inspection and review',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 2 || step.stepNumber === 4);
+    }
+
+    if (formCode === '24C') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Product & Staff Details',
+          description: 'Enter homoeopathic product details and expert staff details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 10),
+        },
+        {
+          stepNumber: 2,
+          title: 'Document Uploads',
+          description: 'Upload homoeopathic manufacturing supporting documents',
+          fields: [],
+        },
+        {
+          stepNumber: 3,
+          title: 'Declaration & Submit',
+          description: 'Confirm details and declaration before submission',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 11 && f.order_index <= 13),
+        },
+        {
+          stepNumber: 4,
+          title: 'Review & Submit',
+          description: 'Review application and submit for validation, inspection and review',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 2 || step.stepNumber === 4);
+    }
+
+    if (formCode === '24F') {
+      const steps: FormStep[] = [
+        {
+          stepNumber: 1,
+          title: 'Drug & Premises Details',
+          description: 'Enter Schedule X drug manufacturing and premises details',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 1 && f.order_index <= 12),
+        },
+        {
+          stepNumber: 2,
+          title: 'Document Uploads',
+          description: 'Upload Schedule X compliance and security documents',
+          fields: [],
+        },
+        {
+          stepNumber: 3,
+          title: 'Declaration & Submit',
+          description: 'Confirm details and declaration before submission',
+          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 13 && f.order_index <= 15),
+        },
+        {
+          stepNumber: 4,
+          title: 'Review & Payment',
+          description: 'Review application and proceed to payment',
+          fields: [],
+        },
+      ];
+
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 2 || step.stepNumber === 4);
+    }
     
     // Define step ranges
     const steps: FormStep[] = [
