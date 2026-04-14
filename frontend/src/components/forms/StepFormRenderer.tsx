@@ -880,9 +880,9 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
         },
         {
           stepNumber: 3,
-          title: 'Supporting Documents',
-          description: 'Upload institutional and previous certificate/withdrawal documents',
-          fields: allFields.filter((f) => f.order_index !== undefined && f.order_index >= 10 && f.order_index <= 12),
+          title: 'Document Uploads',
+          description: 'Upload institutional and supporting compliance documents',
+          fields: [],
         },
         {
           stepNumber: 4,
@@ -892,7 +892,7 @@ export const StepFormRenderer: React.FC<StepFormRendererProps> = ({
         },
       ];
 
-      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 4);
+      return steps.filter((step) => step.fields.length > 0 || step.stepNumber === 3 || step.stepNumber === 4);
     }
 
     if (formCode === 'BSC') {
