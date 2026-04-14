@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, CreditCard, Shield, Lock, AlertCircle } from 'lucide-react';
+import { X, CreditCard, AlertCircle, ChevronLeft, MapPin, Wallet, Landmark, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { paymentService } from '@/services/paymentService';
 import { getFormByCode } from '@/constants/forms';
@@ -35,6 +35,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const form = getFormByCode(formCode);
   const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummy_key';
   const isDemoMode = razorpayKey === 'rzp_test_dummy_key' || razorpayKey.includes('dummy');
+  const amountInRupees = Number.isFinite(amount) ? amount / 100 : 0;
+  const displayAmount = `₹${amountInRupees.toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 
   // Load Razorpay script only if not in demo mode
   useEffect(() => {
@@ -117,7 +122,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           contact: userDetails?.phone || '',
         },
         theme: {
-          color: '#2563eb',
+          color: '#ff6a00',
         },
         handler: async (response: PaymentVerification) => {
           // Payment successful - verify on backend
@@ -151,76 +156,95 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#efe3cf]">
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
-        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/35 transition-opacity" onClick={onClose} />
 
         {/* Modal */}
-        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div className="relative bg-[#f7f7f7] rounded-[28px] shadow-2xl max-w-md w-full border border-white/50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-2xl font-bold text-gray-900">Payment Required</h2>
+          <div className="flex items-center justify-between p-5">
+            <div className="w-9 h-9 rounded-xl bg-[#edeef2] flex items-center justify-center text-gray-600">
+              <ChevronLeft className="w-4 h-4" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Payment Method</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="w-9 h-9 rounded-xl bg-[#edeef2] flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
               disabled={isProcessing}
             >
-              <X className="w-6 h-6" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-6">
-            {/* Form Details */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="px-5 pb-5 space-y-4">
+            <div className="rounded-2xl bg-white p-4 border border-gray-100">
+              <p className="text-sm text-gray-500 mb-2">Shipping to</p>
               <div className="flex items-start gap-3">
-                <CreditCard className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="w-10 h-10 rounded-xl bg-[#eceff4] flex items-center justify-center text-gray-600">
+                  <MapPin className="w-4 h-4" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">
-                    {form?.title || `Form ${formCode}`}
-                  </h3>
-                  <p className="text-sm text-gray-600">{form?.subtitle}</p>
+                  <p className="text-sm font-semibold text-gray-900">{userDetails?.name || 'Applicant'}</p>
+                  <p className="text-xs text-gray-500">{userDetails?.email || 'Registered email will receive receipt'}</p>
                 </div>
               </div>
             </div>
 
-            {/* Amount Display */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-6 text-center">
-              <p className="text-sm font-medium mb-2">Application Fee</p>
-              <p className="text-4xl font-bold">{form?.fees || `₹${amount}`}</p>
-              <p className="text-sm text-blue-100 mt-2">Inclusive of all taxes</p>
+            <div className="rounded-2xl bg-white p-4 border border-gray-100">
+              <p className="text-sm font-medium text-gray-900 mb-3">Add Payment Method</p>
+              <div className="flex gap-3">
+                <div className="w-12 h-12 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-[#ff6a00]" />
+                </div>
+                <div className="w-12 h-12 rounded-xl border border-gray-200 bg-white flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-[#1f6feb]" />
+                </div>
+                <div className="w-12 h-12 rounded-xl border border-gray-200 bg-white flex items-center justify-center">
+                  <Landmark className="w-5 h-5 text-gray-700" />
+                </div>
+                <div className="w-12 h-12 rounded-xl border border-gray-200 bg-white flex items-center justify-center">
+                  <Smartphone className="w-5 h-5 text-[#16a34a]" />
+                </div>
+              </div>
             </div>
 
-            {/* Security Info */}
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Shield className="w-4 h-4 text-green-600" />
-                <span>Secured by Razorpay Payment Gateway</span>
+            <div className="rounded-2xl bg-gradient-to-r from-[#ffb170] to-[#ff6a00] p-4 text-white shadow-md">
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-xs font-semibold tracking-wider">APPLICATION FEE</p>
+                <p className="text-[10px] opacity-90">SECURE PAYMENT</p>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Lock className="w-4 h-4 text-green-600" />
-                <span>256-bit SSL Encrypted Transaction</span>
+              <p className="text-2xl font-semibold tracking-wide mb-3">{displayAmount}</p>
+              <div className="flex items-center justify-between text-xs opacity-95">
+                <p>{form?.code ? `Form ${form.code}` : `Form ${formCode}`}</p>
+                <p>{applicationId ? `ID: ${applicationId.slice(0, 8)}` : 'New Application'}</p>
               </div>
             </div>
 
-            {/* Important Note */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+            <div className="rounded-2xl bg-white p-4 border border-gray-100">
+              <div className="flex justify-between items-center text-sm text-gray-700">
+                <span>Form</span>
+                <span className="font-medium text-gray-900">{form?.title || `Form ${formCode}`}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-gray-700 mt-2">
+                <span>Total Payment</span>
+                <span className="font-semibold text-gray-900">{displayAmount}</span>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-amber-800">
-                <p className="font-semibold mb-1">Important:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Payment is required to submit your application</li>
-                  <li>Your application will be processed only after successful payment</li>
-                  <li>Payment receipt will be sent to your registered email</li>
-                  <li>Refunds are subject to government policy</li>
-                </ul>
+                <p className="font-semibold mb-1">Important</p>
+                <p>Payment is mandatory before submission. Receipt and status updates are sent via email/SMS.</p>
               </div>
             </div>
 
             {/* Demo Mode Banner */}
             {isDemoMode && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-blue-800">
                   <p className="font-semibold mb-1">Demo Mode Active</p>
@@ -234,14 +258,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 p-6 border-t bg-gray-50">
-            <Button variant="outline" onClick={onClose} disabled={isProcessing}>
+          <div className="px-5 pb-5 pt-1 flex items-center gap-3">
+            <Button variant="outline" onClick={onClose} disabled={isProcessing} className="flex-1 h-12 rounded-xl border-orange-300 text-orange-700 hover:bg-orange-50">
               Cancel
             </Button>
             <Button
               onClick={handlePayment}
               disabled={isProcessing || !isScriptLoaded}
-              className="min-w-[150px]"
+              className="flex-1 h-12 rounded-xl bg-[#ff6a00] hover:bg-[#eb6200] text-white"
             >
               {isProcessing ? (
                 <>
@@ -250,8 +274,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 </>
               ) : (
                 <>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Pay
+                  Confirm Order
                 </>
               )}
             </Button>
